@@ -1,0 +1,40 @@
+Format: 1.8
+Date: Mon, 12 May 2014 14:08:53 -0500
+Source: vlc
+Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore7 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-fluidsynth vlc-plugin-jack vlc-plugin-notify vlc-plugin-pulse vlc-plugin-sdl vlc-plugin-svg vlc-plugin-zvbi
+Architecture: source
+Version: 2.1.3-1~ubuntu12.04.2~ppa1+true1
+Distribution: precise
+Urgency: low
+Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
+Changed-By: Michael Nolan <mpnolan@truefitness.com>
+Description: 
+ libvlc-dev - development files for libvlc
+ libvlc5    - multimedia player and streamer library
+ libvlccore-dev - development files for libvlccore
+ libvlccore7 - base library for VLC and its modules
+ vlc        - multimedia player and streamer
+ vlc-data   - Common data for VLC
+ vlc-dbg    - debugging symbols for vlc
+ vlc-nox    - multimedia player and streamer (without X support)
+ vlc-plugin-fluidsynth - FluidSynth plugin for VLC
+ vlc-plugin-jack - Jack audio plugins for VLC
+ vlc-plugin-notify - LibNotify plugin for VLC
+ vlc-plugin-pulse - PulseAudio plugin for VLC
+ vlc-plugin-sdl - SDL video and audio output plugin for VLC
+ vlc-plugin-svg - SVG plugin for VLC
+ vlc-plugin-zvbi - VBI teletext plugin for VLC
+Changes: 
+ vlc (2.1.3-1~ubuntu12.04.2~ppa1+true1) precise; urgency=low
+ .
+   * Initial build from PPA for True Fitness. No custom patches have yet
+     been applied.
+Checksums-Sha1: 
+ e667283b5c71d2d4192e9261632c04260ba7dfc9 3546 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true1.dsc
+ 103823626038542909284c2b4481db506b4756b4 64206 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true1.debian.tar.gz
+Checksums-Sha256: 
+ b228a5d8f063874fee68ed3126c0488c5bea23b4392e9312630989b6031ab4dc 3546 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true1.dsc
+ 18ec465a5c7940bab93a5881360becac373b3caecc4efc726fb6bd345cdbeb70 64206 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true1.debian.tar.gz
+Files: 
+ 3a287dc5bbea724e338d4d7ff72f92e3 3546 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true1.dsc
+ d08d8147443d5adf80695b6e83b9d04a 64206 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true1.debian.tar.gz

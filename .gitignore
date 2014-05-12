@@ -1,0 +1,8 @@
+*.swp
+*.swo
+*.out
+*~
+*.debian.tar.gz
+*.orig.tar*
+src/vlc-2.1.3
+
