@@ -14,7 +14,7 @@ dpkg-buildpackage -b -us -uc -j4
 
 #sudo apt-get build-dep vlc
 
-cd vlc-precise
+cd vlc-2.1.3
 quilt new true-gc-black-screenfix.patch
 quilt add src/declarative/qml/qdeclarative{component,objectscriptclass,vme}.cpp
 quilt add src/declarative/qml/qdeclarativedata_p.h 
@@ -29,13 +29,13 @@ quilt refresh
 # sequence to add a patch and rebuild
 #make getsources
 #make unpack
-#cd vlc-precise
+#cd src/vlc-2.1.3
 #quilt new foo.patch
 #quilt add src/foo.cpp
 #patch -p0 < some.patch
 #quilt refresh
-#dch -v "4:4.8.4+dfsg-0ubuntu18.1~precise1+true3"
+#dch -v "2.1.3-1~ubuntu12.04.2~ppa1+true2" "log message"
 # edit makefile and bump TRVERSION
 #make source
-#dpkg-buildpackage -us -uc -j4
+#make
 

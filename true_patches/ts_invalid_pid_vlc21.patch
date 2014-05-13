@@ -1,0 +1,61 @@
+--- modules/demux/ts.c.orig	2013-09-12 10:18:33.000000000 -0500
++++ modules/demux/ts.c	2014-05-13 09:23:32.913770857 -0500
+@@ -1366,6 +1366,8 @@
+     for( int i = 0; i < p_sys->i_pmt; i++ )
+     {
+         ts_pid_t *pmt = p_sys->pmt[i];
++        if (pmt->b_valid != true) // TrueFit: don't run down invalid programs
++          continue;
+ 
+         for( int i_prg = 0; i_prg < pmt->psi->i_prg; i_prg++ )
+         {
+@@ -2163,7 +2165,10 @@
+         p_sys->i_current_pcr = AdjustPCRWrapAround( p_demux, i_pcr );
+ 
+     /* Search program and set the PCR */
+-    for( int i = 0; i < p_sys->i_pmt; i++ )
++    for( int i = 0; i < p_sys->i_pmt; i++ ) {
++        if (p_sys->pmt[i]->b_valid != true) // TrueFit - don't run down invalid pmt
++          continue;
++
+         for( int i_prg = 0; i_prg < p_sys->pmt[i]->psi->i_prg; i_prg++ )
+             if( pid->i_pid == p_sys->pmt[i]->psi->prg[i_prg]->i_pid_pcr )
+             {
+@@ -2172,6 +2177,7 @@
+                                 (int)p_sys->pmt[i]->psi->prg[i_prg]->i_number,
+                                 (int64_t)(VLC_TS_0 + i_pcr * 100 / 9) );
+             }
++    }
+ }
+ 
+ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -3933,7 +3939,10 @@
+     msg_Dbg( p_demux, "PMTCallBack called" );
+ 
+     /* First find this PMT declared in PAT */
+-    for( int i = 0; !pmt && i < p_sys->i_pmt; i++ )
++    for( int i = 0; !pmt && i < p_sys->i_pmt; i++ ) {
++        if (p_sys->pmt[i]->b_valid != true) // TrueFit - don't run down invalid pmt
++            continue;
++
+         for( int i_prg = 0; !pmt && i_prg < p_sys->pmt[i]->psi->i_prg; i_prg++ )
+         {
+             const int i_pmt_number = p_sys->pmt[i]->psi->prg[i_prg]->i_number;
+@@ -3944,6 +3953,7 @@
+                 prg = p_sys->pmt[i]->psi->prg[i_prg];
+             }
+         }
++    }
+ 
+     if( pmt == NULL )
+     {
+@@ -4217,6 +4227,9 @@
+             ts_pid_t *pmt = p_sys->pmt[i];
+             bool b_keep = false;
+ 
++            if (pmt->b_valid != true) // TrueFit - don't run down invalid pmt
++                continue;
++
+             for( p_program = p_pat->p_first_program; !b_keep && p_program;
+                  p_program = p_program->p_next )
+             {
