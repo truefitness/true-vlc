@@ -1,0 +1,23 @@
+--- modules/demux/ts.c.orig	2014-05-13 14:26:12.456478370 -0500
++++ modules/demux/ts.c	2014-05-13 14:29:03.480478593 -0500
+@@ -967,14 +967,17 @@
+             {
+                 if( p_pid->i_pid == 0 || ( p_sys->b_dvb_meta && ( p_pid->i_pid == 0x11 || p_pid->i_pid == 0x12 || p_pid->i_pid == 0x14 ) ) )
+                 {
+-                    dvbpsi_PushPacket( p_pid->psi->handle, p_pkt->p_buffer );
++                    if ( !(p_pkt->p_buffer[1] & 0x80) )
++                        dvbpsi_PushPacket( p_pid->psi->handle, p_pkt->p_buffer );
+                 }
+                 else
+                 {
+                     for( int i_prg = 0; i_prg < p_pid->psi->i_prg; i_prg++ )
+                     {
+-                        dvbpsi_PushPacket( p_pid->psi->prg[i_prg]->handle,
+-                                           p_pkt->p_buffer );
++
++                        if ( !(p_pkt->p_buffer[1] & 0x80) )
++                            dvbpsi_PushPacket( p_pid->psi->prg[i_prg]->handle,
++                                             p_pkt->p_buffer );
+                     }
+                 }
+                 block_Release( p_pkt );

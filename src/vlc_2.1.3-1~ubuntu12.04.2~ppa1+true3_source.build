@@ -1,0 +1,26 @@
+ dpkg-buildpackage -rfakeroot -d -us -uc -S -sd
+dpkg-buildpackage: source package vlc
+dpkg-buildpackage: source version 2.1.3-1~ubuntu12.04.2~ppa1+true3
+dpkg-buildpackage: source changed by Michael Nolan <mpnolan@truefitness.com>
+ dpkg-source --before-build vlc-2.1.3
+ fakeroot debian/rules clean
+dh clean --parallel --with autoreconf
+   dh_testdir -O--parallel
+   debian/rules override_dh_auto_clean
+make[1]: Entering directory `/home/mpnolan/true-vlc/src/vlc-2.1.3'
+rm -f debian/vlc.install debian/vlc-nox.install
+dh_auto_clean
+make[1]: Leaving directory `/home/mpnolan/true-vlc/src/vlc-2.1.3'
+   dh_autoreconf_clean -O--parallel
+   dh_clean -O--parallel
+ dpkg-source -b vlc-2.1.3
+dpkg-source: warning: Version number suggests Ubuntu changes, but Maintainer: does not have Ubuntu address
+dpkg-source: warning: Version number suggests Ubuntu changes, but there is no XSBC-Original-Maintainer field
+dpkg-source: info: using source format `3.0 (quilt)'
+dpkg-source: info: building vlc using existing ./vlc_2.1.3.orig.tar.xz
+dpkg-source: info: building vlc in vlc_2.1.3-1~ubuntu12.04.2~ppa1+true3.debian.tar.gz
+dpkg-source: info: building vlc in vlc_2.1.3-1~ubuntu12.04.2~ppa1+true3.dsc
+ dpkg-genchanges -S -sd >../vlc_2.1.3-1~ubuntu12.04.2~ppa1+true3_source.changes
+dpkg-genchanges: not including original source code in upload
+ dpkg-source --after-build vlc-2.1.3
+dpkg-buildpackage: binary and diff upload (original source NOT included)
