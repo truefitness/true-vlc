@@ -1,0 +1,80 @@
+Format: 1.8
+Date: Wed, 21 May 2014 11:37:21 -0500
+Source: vlc
+Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore5 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-fluidsynth vlc-plugin-jack vlc-plugin-notify vlc-plugin-pulse vlc-plugin-sdl vlc-plugin-svg vlc-plugin-zvbi
+Architecture: i386 all
+Version: 2.0.8-0ubuntu0.12.04.1+true2
+Distribution: precise-security
+Urgency: low
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Changed-By: Michael Nolan <mpnolan@truefitness.com>
+Description: 
+ libvlc-dev - development files for libvlc
+ libvlc5    - multimedia player and streamer library
+ libvlccore-dev - development files for libvlccore
+ libvlccore5 - base library for VLC and its modules
+ vlc        - multimedia player and streamer
+ vlc-data   - Common data for VLC
+ vlc-dbg    - debugging symbols for vlc
+ vlc-nox    - multimedia player and streamer (without X support)
+ vlc-plugin-fluidsynth - FluidSynth plugin for VLC
+ vlc-plugin-jack - Jack audio plugins for VLC
+ vlc-plugin-notify - LibNotify plugin for VLC
+ vlc-plugin-pulse - PulseAudio plugin for VLC
+ vlc-plugin-sdl - SDL video and audio output plugin for VLC
+ vlc-plugin-svg - SVG plugin for VLC
+ vlc-plugin-zvbi - VBI teletext plugin for VLC
+Changes: 
+ vlc (2.0.8-0ubuntu0.12.04.1+true2) precise-security; urgency=low
+ .
+   * Added patch: true_ts_check_TEI.patch
+   * Added patch: true_ts_invalid_pid_crash.patch
+Checksums-Sha1: 
+ aad34672e881c8d40a72459aeb6d9fec9b6f7edd 74636 libvlc-dev_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 464196e192bd655766b45c2be329d0d3e64d1866 50426 libvlc5_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 6441e575dfeee8cab0252d459ec88736dd5197fe 686154 libvlccore-dev_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 177164e8df2099df6113e62669d9714cf51d37f7 467962 libvlccore5_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 1a26dfa4fcac96f52158c5ac5bd18d45315ea4d0 1405562 vlc_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ aac1e5b612a5b743d70019d2b3cf901bc9bd6382 10485058 vlc-data_2.0.8-0ubuntu0.12.04.1+true2_all.deb
+ 96bebec703160f0982b9ac2ff235756ba39a67c9 18940318 vlc-dbg_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 4887094307f9ed16467d6e8b77f8c61f90026365 3232886 vlc-nox_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ b3e436f2e400da00f32a058220f2d469128e4d0d 6750 vlc-plugin-fluidsynth_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 265a8a172c2b59d214f2c7b5b25139d6f3f57589 11854 vlc-plugin-jack_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 01249cd11f2d378cced11bef5fdc49021fe28cda 6618 vlc-plugin-notify_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 0752c18f2eafe2eab4543b7856be43281e139a51 23514 vlc-plugin-pulse_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 4aeb5ef9dbe22ffb0388b2874d0ce38d7d51ef6a 9990 vlc-plugin-sdl_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ aa41b1c7a5d15106948ab2d82db8f64a01432b22 7368 vlc-plugin-svg_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ fd2c1b8679fc57f2fedd0d1781431a340ef650d6 9716 vlc-plugin-zvbi_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+Checksums-Sha256: 
+ adaebe4d4cb8b727c05034ae58f01ac25b62b568e9785ef791af01fc2f9aab66 74636 libvlc-dev_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 75938c96a3d74cc65a7e7cf67711fb304722ba05644e0fe08aaae1f4804ed749 50426 libvlc5_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 9a0f2835933db6fb073d6c49238ffd19e75dc45511e3f45996cdf24d12fa379c 686154 libvlccore-dev_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 533ca974e4fc11fb1623ce923b75f572fdd5c5e048fc941c27fba71eaafff71b 467962 libvlccore5_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ d23ae115ac4987ef44738e0fc111960a3a284f3ca9ef3a8cf9e1f9bd309f22f7 1405562 vlc_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 461501ae448c3fb3ccfbe388d39e835d8468caed43df8808a958a753053bb793 10485058 vlc-data_2.0.8-0ubuntu0.12.04.1+true2_all.deb
+ e4f5257a6caafdf9b53904c8c653c00a8652d4b5d53c4bfcb44256cd69ace420 18940318 vlc-dbg_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 3860ebb7a7fb863babb026b48c3372ea18ebff38fa7c5b8a023d39ca9d82dc72 3232886 vlc-nox_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 482191434d20e63a67233414bcf4f3fd40ca47903a351e3ee9ca439639a82402 6750 vlc-plugin-fluidsynth_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 95e52d6d8be6d7d2d3d77f8d13068c22fa76e1660578fcb6a654d78ec33e8a7f 11854 vlc-plugin-jack_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ c0763e0bbb82a270188cfa7886c97306b98115a606bccdcb30e6ad798a70c7d4 6618 vlc-plugin-notify_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 9d50e8e71995ef2a7a14395d3fe4c517b69df370bf236840c362748c88e6495d 23514 vlc-plugin-pulse_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 7c8946f7d135c9bd823ecaaf57a08555f01fe1164dc8e495e12f5fecb1af0843 9990 vlc-plugin-sdl_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 67ae08777641f29c4ecb707d870a709e32e68e28dcdf39414914a8c72a9222e3 7368 vlc-plugin-svg_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ aea75820aa84666f6908b280410673b4b573cb786643c2c34601c8649c3a75b4 9716 vlc-plugin-zvbi_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+Files: 
+ 37d24c1d39e7fea308a334a565a62839 74636 libdevel optional libvlc-dev_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ ceb5e3f997510869cf4b70933661ff11 50426 libs optional libvlc5_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ bf82404469fd57b83dfd05427a480612 686154 libdevel optional libvlccore-dev_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ d3e317e7efe459bc180953c02ee01f9f 467962 libs optional libvlccore5_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 50fd494e91a5d8b78b347ed08f03e7fa 1405562 video optional vlc_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 5bd6b4b74ca198d9b2ba79630c5f37fd 10485058 video optional vlc-data_2.0.8-0ubuntu0.12.04.1+true2_all.deb
+ d9b9e78a65792786adff3bc4c21e1714 18940318 debug extra vlc-dbg_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 6b1dc5ab12dda0b4cf48c089427902fd 3232886 video optional vlc-nox_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 6c39bbc8a101c8b066b55f62f4611c73 6750 video optional vlc-plugin-fluidsynth_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ a3e7021c1bee35d8f586145f20fc84a8 11854 video optional vlc-plugin-jack_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ afaaded3eadeea8f42697055cfd14cb5 6618 video optional vlc-plugin-notify_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 8a21529d4ca33a505f5d3ca746ddac11 23514 video optional vlc-plugin-pulse_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ afe733d16002bcbda2195bb001982eaa 9990 video optional vlc-plugin-sdl_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ 68ae39e0487b09c5dbfe8af2aec913a0 7368 video optional vlc-plugin-svg_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+ f11c2be119c826311ff4214c4e8a1a66 9716 video optional vlc-plugin-zvbi_2.0.8-0ubuntu0.12.04.1+true2_i386.deb
+Original-Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>

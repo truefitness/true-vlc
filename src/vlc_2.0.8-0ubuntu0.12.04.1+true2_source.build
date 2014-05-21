@@ -1,0 +1,122 @@
+ dpkg-buildpackage -rfakeroot -d -us -uc -S -sd
+dpkg-buildpackage: export CFLAGS from dpkg-buildflags (origin: vendor): -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security
+dpkg-buildpackage: export CPPFLAGS from dpkg-buildflags (origin: vendor): -D_FORTIFY_SOURCE=2
+dpkg-buildpackage: export CXXFLAGS from dpkg-buildflags (origin: vendor): -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security
+dpkg-buildpackage: export FFLAGS from dpkg-buildflags (origin: vendor): -g -O2
+dpkg-buildpackage: export LDFLAGS from dpkg-buildflags (origin: vendor): -Wl,-Bsymbolic-functions -Wl,-z,relro
+dpkg-buildpackage: source package vlc
+dpkg-buildpackage: source version 2.0.8-0ubuntu0.12.04.1+true2
+dpkg-buildpackage: source changed by Michael Nolan <mpnolan@truefitness.com>
+ dpkg-source --before-build vlc-2.0.8
+ fakeroot debian/rules clean
+dh clean --parallel --with autoreconf
+   dh_testdir -O--parallel
+   debian/rules override_dh_auto_clean
+make[1]: Entering directory `/home/mpnolan/true-vlc/src/vlc-2.0.8'
+[ ! -f debian/vlc-nox.install.bak ] || mv -f debian/vlc-nox.install.bak debian/vlc-nox.install
+rm -rf tmp/
+dh_auto_clean
+make[1]: Leaving directory `/home/mpnolan/true-vlc/src/vlc-2.0.8'
+   dh_autoreconf_clean -O--parallel
+   dh_clean -O--parallel
+ dpkg-source -b vlc-2.0.8
+dpkg-source: info: using source format `3.0 (quilt)'
+dpkg-source: info: building vlc using existing ./vlc_2.0.8.orig.tar.xz
+dpkg-source: warning: ignoring deletion of file INSTALL
+dpkg-source: warning: ignoring deletion of file configure
+dpkg-source: warning: ignoring deletion of file aclocal.m4
+dpkg-source: warning: ignoring deletion of file Makefile.in
+dpkg-source: warning: ignoring deletion of file ABOUT-NLS
+dpkg-source: warning: ignoring deletion of file bin/Makefile.in
+dpkg-source: warning: ignoring deletion of file test/Makefile.in
+dpkg-source: warning: ignoring deletion of file src/Makefile.in
+dpkg-source: warning: ignoring deletion of file src/test/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/3dnow/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/mmxext/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/meta_engine/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/mux/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/mux/mpeg/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/audio_output/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/gui/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/gui/skins2/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/gui/hildon/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/gui/macosx/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/gui/minimal_macosx/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/gui/macosx_dialog_provider/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/gui/qt4/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/visualization/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/visualization/visual/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access_output/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/vcd/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/mms/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/dshow/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/vcdx/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/bd/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/screen/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/rtsp/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/zip/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/zip/unzip/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/access/rtp/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/video_filter/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/video_filter/dynamicoverlay/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/misc/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/misc/osd/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/misc/stats/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/misc/playlist/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/codec/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/codec/dmo/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/codec/wmafixed/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/codec/shine/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/codec/omxil/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/codec/loader/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/codec/spudec/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/codec/avcodec/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/services_discovery/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/demux/dummy.cpp
+dpkg-source: warning: ignoring deletion of file modules/demux/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/demux/asf/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/demux/mpeg/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/demux/mp4/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/demux/playlist/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/demux/mkv/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/demux/avi/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/demux/avformat/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/control/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/control/dbus/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/control/globalhotkeys/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/stream_out/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/stream_out/transcode/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/arm_neon/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/media_library/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/mmx/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/lua/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/altivec/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/video_output/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/video_output/msw/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/video_chroma/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/sse2/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/notify/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/audio_filter/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/text_renderer/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/audio_mixer/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/packetizer/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/stream_filter/Makefile.in
+dpkg-source: warning: ignoring deletion of file modules/stream_filter/dash/Makefile.in
+dpkg-source: warning: ignoring deletion of file autotools/compile
+dpkg-source: warning: ignoring deletion of file autotools/ltmain.sh
+dpkg-source: warning: ignoring deletion of file autotools/depcomp
+dpkg-source: warning: ignoring deletion of file lib/Makefile.in
+dpkg-source: warning: ignoring deletion of file compat/dummy.c
+dpkg-source: warning: ignoring deletion of file compat/Makefile.in
+dpkg-source: warning: ignoring deletion of file share/Makefile.in
+dpkg-source: warning: ignoring deletion of file m4/libtool.m4
+dpkg-source: warning: ignoring deletion of file m4/Makefile.in
+dpkg-source: warning: ignoring deletion of file doc/Makefile.in
+dpkg-source: info: building vlc in vlc_2.0.8-0ubuntu0.12.04.1+true2.debian.tar.gz
+dpkg-source: info: building vlc in vlc_2.0.8-0ubuntu0.12.04.1+true2.dsc
+ dpkg-genchanges -S -sd >../vlc_2.0.8-0ubuntu0.12.04.1+true2_source.changes
+dpkg-genchanges: not including original source code in upload
+ dpkg-source --after-build vlc-2.0.8
+dpkg-buildpackage: binary and diff upload (original source NOT included)

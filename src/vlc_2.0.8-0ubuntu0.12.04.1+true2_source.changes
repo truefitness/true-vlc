@@ -1,0 +1,41 @@
+Format: 1.8
+Date: Wed, 21 May 2014 11:37:21 -0500
+Source: vlc
+Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore5 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-fluidsynth vlc-plugin-jack vlc-plugin-notify vlc-plugin-pulse vlc-plugin-sdl vlc-plugin-svg vlc-plugin-zvbi
+Architecture: source
+Version: 2.0.8-0ubuntu0.12.04.1+true2
+Distribution: precise-security
+Urgency: low
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Changed-By: Michael Nolan <mpnolan@truefitness.com>
+Description: 
+ libvlc-dev - development files for libvlc
+ libvlc5    - multimedia player and streamer library
+ libvlccore-dev - development files for libvlccore
+ libvlccore5 - base library for VLC and its modules
+ vlc        - multimedia player and streamer
+ vlc-data   - Common data for VLC
+ vlc-dbg    - debugging symbols for vlc
+ vlc-nox    - multimedia player and streamer (without X support)
+ vlc-plugin-fluidsynth - FluidSynth plugin for VLC
+ vlc-plugin-jack - Jack audio plugins for VLC
+ vlc-plugin-notify - LibNotify plugin for VLC
+ vlc-plugin-pulse - PulseAudio plugin for VLC
+ vlc-plugin-sdl - SDL video and audio output plugin for VLC
+ vlc-plugin-svg - SVG plugin for VLC
+ vlc-plugin-zvbi - VBI teletext plugin for VLC
+Changes: 
+ vlc (2.0.8-0ubuntu0.12.04.1+true2) precise-security; urgency=low
+ .
+   * Added patch: true_ts_check_TEI.patch
+   * Added patch: true_ts_invalid_pid_crash.patch
+Checksums-Sha1: 
+ 524d31396b78174c1c6e986282ea6f8476d30da2 4121 vlc_2.0.8-0ubuntu0.12.04.1+true2.dsc
+ f1b88f5f6ec04a140d992823e4262834e0ff39d3 58867 vlc_2.0.8-0ubuntu0.12.04.1+true2.debian.tar.gz
+Checksums-Sha256: 
+ de26b3dcab6a61db8e87b5188f42a6e9103f9fee4c6660f5f6f3f668b31a582c 4121 vlc_2.0.8-0ubuntu0.12.04.1+true2.dsc
+ 55d5ddeb98265f2aac22f4f22eb12ccdb4f199f085305903745632478c64e018 58867 vlc_2.0.8-0ubuntu0.12.04.1+true2.debian.tar.gz
+Files: 
+ 47d6b2ed071da5a656bbf62f5f6fc70b 4121 video optional vlc_2.0.8-0ubuntu0.12.04.1+true2.dsc
+ 95e72b5014bac3e6a682790110e4cf2d 58867 video optional vlc_2.0.8-0ubuntu0.12.04.1+true2.debian.tar.gz
+Original-Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
