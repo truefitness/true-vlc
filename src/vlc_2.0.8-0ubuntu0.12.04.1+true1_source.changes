@@ -1,0 +1,40 @@
+Format: 1.8
+Date: Wed, 21 May 2014 11:12:33 -0500
+Source: vlc
+Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore5 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-fluidsynth vlc-plugin-jack vlc-plugin-notify vlc-plugin-pulse vlc-plugin-sdl vlc-plugin-svg vlc-plugin-zvbi
+Architecture: source
+Version: 2.0.8-0ubuntu0.12.04.1+true1
+Distribution: precise-security
+Urgency: low
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Changed-By: Michael Nolan <mpnolan@truefitness.com>
+Description: 
+ libvlc-dev - development files for libvlc
+ libvlc5    - multimedia player and streamer library
+ libvlccore-dev - development files for libvlccore
+ libvlccore5 - base library for VLC and its modules
+ vlc        - multimedia player and streamer
+ vlc-data   - Common data for VLC
+ vlc-dbg    - debugging symbols for vlc
+ vlc-nox    - multimedia player and streamer (without X support)
+ vlc-plugin-fluidsynth - FluidSynth plugin for VLC
+ vlc-plugin-jack - Jack audio plugins for VLC
+ vlc-plugin-notify - LibNotify plugin for VLC
+ vlc-plugin-pulse - PulseAudio plugin for VLC
+ vlc-plugin-sdl - SDL video and audio output plugin for VLC
+ vlc-plugin-svg - SVG plugin for VLC
+ vlc-plugin-zvbi - VBI teletext plugin for VLC
+Changes: 
+ vlc (2.0.8-0ubuntu0.12.04.1+true1) precise-security; urgency=low
+ .
+   * Initial version for True Fitness. Adding +true1 suffix.
+Checksums-Sha1: 
+ fd379dd450a35d9f946bc725a7f5d20b332266ea 4121 vlc_2.0.8-0ubuntu0.12.04.1+true1.dsc
+ 622f5fd404ecf4746e901edbc0e76b5a894c5b2f 58058 vlc_2.0.8-0ubuntu0.12.04.1+true1.debian.tar.gz
+Checksums-Sha256: 
+ 57e87c86d50dc91ef0b1ad501cef01b18163ca1b070e5c83c1bbf17edf4ba095 4121 vlc_2.0.8-0ubuntu0.12.04.1+true1.dsc
+ b4990ba5350dfc796900113c57cdae32badfd69d2d52c2288de51b21cee30fc0 58058 vlc_2.0.8-0ubuntu0.12.04.1+true1.debian.tar.gz
+Files: 
+ cd3f3d05a8fdfdbb32385f2cf1d321d5 4121 video optional vlc_2.0.8-0ubuntu0.12.04.1+true1.dsc
+ 6fc3c96a2c701876fbdde5f5d6a91f00 58058 video optional vlc_2.0.8-0ubuntu0.12.04.1+true1.debian.tar.gz
+Original-Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
