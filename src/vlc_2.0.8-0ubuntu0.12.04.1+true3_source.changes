@@ -1,0 +1,40 @@
+Format: 1.8
+Date: Tue, 27 May 2014 16:19:03 -0500
+Source: vlc
+Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore5 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-fluidsynth vlc-plugin-jack vlc-plugin-notify vlc-plugin-pulse vlc-plugin-sdl vlc-plugin-svg vlc-plugin-zvbi
+Architecture: source
+Version: 2.0.8-0ubuntu0.12.04.1+true3
+Distribution: precise-security
+Urgency: low
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Changed-By: Michael Nolan <mpnolan@truefitness.com>
+Description: 
+ libvlc-dev - development files for libvlc
+ libvlc5    - multimedia player and streamer library
+ libvlccore-dev - development files for libvlccore
+ libvlccore5 - base library for VLC and its modules
+ vlc        - multimedia player and streamer
+ vlc-data   - Common data for VLC
+ vlc-dbg    - debugging symbols for vlc
+ vlc-nox    - multimedia player and streamer (without X support)
+ vlc-plugin-fluidsynth - FluidSynth plugin for VLC
+ vlc-plugin-jack - Jack audio plugins for VLC
+ vlc-plugin-notify - LibNotify plugin for VLC
+ vlc-plugin-pulse - PulseAudio plugin for VLC
+ vlc-plugin-sdl - SDL video and audio output plugin for VLC
+ vlc-plugin-svg - SVG plugin for VLC
+ vlc-plugin-zvbi - VBI teletext plugin for VLC
+Changes: 
+ vlc (2.0.8-0ubuntu0.12.04.1+true3) precise-security; urgency=low
+ .
+   * Added patch: true_sar.patch. This corrects the aspect ratio for some TV streams.
+Checksums-Sha1: 
+ 2a5ac278be934c97a908fbfd79f2ab5b4f76bca1 4121 vlc_2.0.8-0ubuntu0.12.04.1+true3.dsc
+ aec2570f42182ff8a1805a258ad5bf860d270dac 60214 vlc_2.0.8-0ubuntu0.12.04.1+true3.debian.tar.gz
+Checksums-Sha256: 
+ edc4aa11d6798fea7200a03173db5533489c46c8362dcc89739b1a499f4f4d1c 4121 vlc_2.0.8-0ubuntu0.12.04.1+true3.dsc
+ 12e587adc5fc00a860822bedcf188434e9ab038bb54ec4d6673443259cd2854e 60214 vlc_2.0.8-0ubuntu0.12.04.1+true3.debian.tar.gz
+Files: 
+ e07219cb96cd5831104ee0debe9aebb9 4121 video optional vlc_2.0.8-0ubuntu0.12.04.1+true3.dsc
+ 400ead13c5daf2c39a2194d8dd4bda47 60214 video optional vlc_2.0.8-0ubuntu0.12.04.1+true3.debian.tar.gz
+Original-Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
