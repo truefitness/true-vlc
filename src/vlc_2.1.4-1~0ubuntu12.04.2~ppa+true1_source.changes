@@ -1,0 +1,40 @@
+Format: 1.8
+Date: Wed, 28 May 2014 16:26:18 -0500
+Source: vlc
+Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore7 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-fluidsynth vlc-plugin-jack vlc-plugin-notify vlc-plugin-pulse vlc-plugin-sdl vlc-plugin-svg vlc-plugin-zvbi
+Architecture: source
+Version: 2.1.4-1~0ubuntu12.04.2~ppa+true1
+Distribution: precise
+Urgency: low
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Changed-By: Michael Nolan <mpnolan@truefitness.com>
+Description: 
+ libvlc-dev - development files for libvlc
+ libvlc5    - multimedia player and streamer library
+ libvlccore-dev - development files for libvlccore
+ libvlccore7 - base library for VLC and its modules
+ vlc        - multimedia player and streamer
+ vlc-data   - Common data for VLC
+ vlc-dbg    - debugging symbols for vlc
+ vlc-nox    - multimedia player and streamer (without X support)
+ vlc-plugin-fluidsynth - FluidSynth plugin for VLC
+ vlc-plugin-jack - Jack audio plugins for VLC
+ vlc-plugin-notify - LibNotify plugin for VLC
+ vlc-plugin-pulse - PulseAudio plugin for VLC
+ vlc-plugin-sdl - SDL video and audio output plugin for VLC
+ vlc-plugin-svg - SVG plugin for VLC
+ vlc-plugin-zvbi - VBI teletext plugin for VLC
+Changes: 
+ vlc (2.1.4-1~0ubuntu12.04.2~ppa+true1) precise; urgency=low
+ .
+   * Initial build for True Fitness
+Checksums-Sha1: 
+ 56e707debe8cb9b4d8558b69963a555477b2dca8 3610 vlc_2.1.4-1~0ubuntu12.04.2~ppa+true1.dsc
+ d420628bea66fe5aacb070b89b228e7338344416 65241 vlc_2.1.4-1~0ubuntu12.04.2~ppa+true1.debian.tar.gz
+Checksums-Sha256: 
+ 6ea14e747a6c267133ff6ca2b59f32229b0d432ab2a1f108d568a92784640914 3610 vlc_2.1.4-1~0ubuntu12.04.2~ppa+true1.dsc
+ 16b9156bcf785e655914dee98d036fcff07a951ef773598892b1b4ef5fa152ca 65241 vlc_2.1.4-1~0ubuntu12.04.2~ppa+true1.debian.tar.gz
+Files: 
+ a295576c728efe2e5b49b1490fe800c5 3610 video optional vlc_2.1.4-1~0ubuntu12.04.2~ppa+true1.dsc
+ a82e84ad9c4efe5ebcc6e50352ce846d 65241 video optional vlc_2.1.4-1~0ubuntu12.04.2~ppa+true1.debian.tar.gz
+Original-Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>

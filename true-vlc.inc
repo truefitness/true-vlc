@@ -1,8 +1,8 @@
 #!/usr/bin/make
 
-DEBVERSION := 2.1.3
-UBVERSION := 1~ubuntu12.04.2~ppa1
-TRVERSION := +true5
+DEBVERSION := 2.1.4
+UBVERSION := 1~ubuntu12.04.2~ppa
+TRVERSION := +true1
 VERSION := ${DEBVERSION}-${UBVERSION}${TRVERSION}
 APPNAME=vlc
 SRCDIR=./src
@@ -13,7 +13,7 @@ DSCNAME=${APPNAME}_${VERSION}.dsc
 MAINTAINER=mpnolan@truefitness.com
 BUILDDIR=${SRCDIR}/${APPNAME}-${DEBVERSION}
 #DEBDIR := ${APPDIR}/debian
-DEBIAN_TGZ := http://software.truefitness.com/true-vlc/vlc_2.1.3-1~ubuntu12.04.2~ppa1${TRVERSION}.debian.tar.gz
+DEBIAN_TGZ := http://software.truefitness.com/true-vlc/2.1.4/vlc_2.1.4-1~ubuntu12.04.2~ppa${TRVERSION}.debian.tar.gz
 
 
 all: shownames getsources unpack build repo
@@ -40,7 +40,7 @@ get_debian_tgz:
 
 get_source_package:
 	@echo "downloading orig.tar.gz from server..."
-	(cd ${SRCDIR}; wget -N http://software.truefitness.com/true-vlc/vlc_2.1.3.orig.tar.xz)
+	(cd ${SRCDIR}; wget -N http://software.truefitness.com/true-vlc/2.1.4/vlc_2.1.4.orig.tar.xz)
 
 source:
 	@echo "creating source package..."
