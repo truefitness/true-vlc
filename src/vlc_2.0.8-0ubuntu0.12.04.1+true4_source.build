@@ -1,0 +1,30 @@
+ dpkg-buildpackage -rfakeroot -d -us -uc -S -sd
+dpkg-buildpackage: export CFLAGS from dpkg-buildflags (origin: vendor): -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security
+dpkg-buildpackage: export CPPFLAGS from dpkg-buildflags (origin: vendor): -D_FORTIFY_SOURCE=2
+dpkg-buildpackage: export CXXFLAGS from dpkg-buildflags (origin: vendor): -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security
+dpkg-buildpackage: export FFLAGS from dpkg-buildflags (origin: vendor): -g -O2
+dpkg-buildpackage: export LDFLAGS from dpkg-buildflags (origin: vendor): -Wl,-Bsymbolic-functions -Wl,-z,relro
+dpkg-buildpackage: source package vlc
+dpkg-buildpackage: source version 2.0.8-0ubuntu0.12.04.1+true4
+dpkg-buildpackage: source changed by Ralph Walden <rwalden@truefitness.com>
+ dpkg-source --before-build vlc-2.0.8
+ fakeroot debian/rules clean
+dh clean --parallel --with autoreconf
+   dh_testdir -O--parallel
+   debian/rules override_dh_auto_clean
+make[1]: Entering directory `/home/likewise-open/TRUEDOM/rwalden/projects/vlc/true-vlc/src/vlc-2.0.8'
+[ ! -f debian/vlc-nox.install.bak ] || mv -f debian/vlc-nox.install.bak debian/vlc-nox.install
+rm -rf tmp/
+dh_auto_clean
+make[1]: Leaving directory `/home/likewise-open/TRUEDOM/rwalden/projects/vlc/true-vlc/src/vlc-2.0.8'
+   dh_autoreconf_clean -O--parallel
+   dh_clean -O--parallel
+ dpkg-source -b vlc-2.0.8
+dpkg-source: info: using source format `3.0 (quilt)'
+dpkg-source: info: building vlc using existing ./vlc_2.0.8.orig.tar.xz
+dpkg-source: info: building vlc in vlc_2.0.8-0ubuntu0.12.04.1+true4.debian.tar.gz
+dpkg-source: info: building vlc in vlc_2.0.8-0ubuntu0.12.04.1+true4.dsc
+ dpkg-genchanges -S -sd >../vlc_2.0.8-0ubuntu0.12.04.1+true4_source.changes
+dpkg-genchanges: not including original source code in upload
+ dpkg-source --after-build vlc-2.0.8
+dpkg-buildpackage: binary and diff upload (original source NOT included)
