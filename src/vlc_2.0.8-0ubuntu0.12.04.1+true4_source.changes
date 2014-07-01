@@ -1,0 +1,40 @@
+Format: 1.8
+Date: Tue, 01 Jul 2014 11:21:34 -0500
+Source: vlc
+Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore5 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-fluidsynth vlc-plugin-jack vlc-plugin-notify vlc-plugin-pulse vlc-plugin-sdl vlc-plugin-svg vlc-plugin-zvbi
+Architecture: source
+Version: 2.0.8-0ubuntu0.12.04.1+true4
+Distribution: precise
+Urgency: low
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Changed-By: Michael Nolan <mpnolan@truefitness.com>
+Description: 
+ libvlc-dev - development files for libvlc
+ libvlc5    - multimedia player and streamer library
+ libvlccore-dev - development files for libvlccore
+ libvlccore5 - base library for VLC and its modules
+ vlc        - multimedia player and streamer
+ vlc-data   - Common data for VLC
+ vlc-dbg    - debugging symbols for vlc
+ vlc-nox    - multimedia player and streamer (without X support)
+ vlc-plugin-fluidsynth - FluidSynth plugin for VLC
+ vlc-plugin-jack - Jack audio plugins for VLC
+ vlc-plugin-notify - LibNotify plugin for VLC
+ vlc-plugin-pulse - PulseAudio plugin for VLC
+ vlc-plugin-sdl - SDL video and audio output plugin for VLC
+ vlc-plugin-svg - SVG plugin for VLC
+ vlc-plugin-zvbi - VBI teletext plugin for VLC
+Changes: 
+ vlc (2.0.8-0ubuntu0.12.04.1+true4) precise; urgency=low
+ .
+   * Add patch to handle playing programs with shared video PIDs.
+Checksums-Sha1: 
+ 5bf39a594ce6f2e26826d886e520bf05a3039f50 4121 vlc_2.0.8-0ubuntu0.12.04.1+true4.dsc
+ 74e3e6ce013eeecfb6e4040844dc64859026b24a 60556 vlc_2.0.8-0ubuntu0.12.04.1+true4.debian.tar.gz
+Checksums-Sha256: 
+ 015706bd02e31320191225fa735bc861efb7cdc939aa73d9122c6cc1823f53fc 4121 vlc_2.0.8-0ubuntu0.12.04.1+true4.dsc
+ 054f31da8d2c9d52e2c5130f620565b7c4345a17d8c107f6ed2bdf589cd2016b 60556 vlc_2.0.8-0ubuntu0.12.04.1+true4.debian.tar.gz
+Files: 
+ 8d00bf42b76e5ff9a2453b650995b1e3 4121 video optional vlc_2.0.8-0ubuntu0.12.04.1+true4.dsc
+ 389d7d3016de84a40c20168c283db8b0 60556 video optional vlc_2.0.8-0ubuntu0.12.04.1+true4.debian.tar.gz
+Original-Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
