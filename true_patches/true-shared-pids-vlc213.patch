@@ -1,0 +1,14 @@
+--- modules/demux/ts.c.orig	2014-07-22 10:38:36.520099464 -0500
++++ modules/demux/ts.c	2014-07-22 10:40:34.100101418 -0500
+@@ -4341,8 +4341,10 @@
+         prg->i_number = p_program->i_number;
+         prg->i_pid_pmt = p_program->i_pid;
+ 
++        // mpn: Use user-selected program if passed, rather than defaulting to first
++        int prog = var_InheritInteger( p_demux, "program" );
+         /* Now select PID at access level */
+-        if( ProgramIsSelected( p_demux, p_program->i_number ) )
++        if((prog != 0 && p_program->i_number == prog) || (prog == 0 && ProgramIsSelected( p_demux, p_program->i_number)))
+         {
+             if( p_sys->i_current_program == 0 )
+                 p_sys->i_current_program = p_program->i_number;
