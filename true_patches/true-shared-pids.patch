@@ -1,0 +1,15 @@
+Patch to fix problem where multiple PMT packets share a video PID. VLC would fail to play programs that shared a video PID with a prior program. This patch allows those programs to play successfully.
+--- a/modules/demux/ts.c
++++ b/modules/demux/ts.c
+@@ -4519,8 +4519,10 @@
+                 pmt->psi->prg[pmt->psi->i_prg-1]->i_pid_pmt =
+                     p_program->i_pid;
+ 
++                // mpn: Use user-selected program if passed, rather than defaulting to first
++                int prog = var_InheritInteger( p_demux, "program" );
+                 /* Now select PID at access level */
+-                if( ProgramIsSelected( p_demux, p_program->i_number ) )
++                if((prog != 0 && p_program->i_number == prog) || (prog == 0 && ProgramIsSelected( p_demux, p_program->i_number)))
+                 {
+                     if( p_sys->i_current_program == 0 )
+                         p_sys->i_current_program = p_program->i_number;
