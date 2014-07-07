@@ -1,7 +1,7 @@
 Format: 1.8
 Date: Wed, 28 May 2014 12:31:43 -0500
 Source: vlc
-Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore7 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-fluidsynth vlc-plugin-jack vlc-plugin-notify vlc-plugin-pulse vlc-plugin-sdl vlc-plugin-svg vlc-plugin-zvbi
+Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore7 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-pulse vlc-plugin-zvbi
 Architecture: source
 Version: 2.1.3-1~ubuntu12.04.2~ppa1+true5
 Distribution: precise
@@ -17,23 +17,18 @@ Description:
  vlc-data   - Common data for VLC
  vlc-dbg    - debugging symbols for vlc
  vlc-nox    - multimedia player and streamer (without X support)
- vlc-plugin-fluidsynth - FluidSynth plugin for VLC
- vlc-plugin-jack - Jack audio plugins for VLC
- vlc-plugin-notify - LibNotify plugin for VLC
  vlc-plugin-pulse - PulseAudio plugin for VLC
- vlc-plugin-sdl - SDL video and audio output plugin for VLC
- vlc-plugin-svg - SVG plugin for VLC
  vlc-plugin-zvbi - VBI teletext plugin for VLC
 Changes: 
  vlc (2.1.3-1~ubuntu12.04.2~ppa1+true5) precise; urgency=low
  .
    * Enabling FAAD codec in debian/rules.
 Checksums-Sha1: 
- b8705600ad05ec106aeb0bd24748b21d59393df8 3546 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.dsc
- ee406bd19da6f8863ccb5273683519b63d9ed76d 66937 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.debian.tar.gz
+ 05f82f9366de5f4caa693788a05593d3ef3f56b1 3172 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.dsc
+ 76a5f321273c4a8bf54b8fc97a9f798e99e18e86 66570 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.debian.tar.gz
 Checksums-Sha256: 
- febcc5fbc7fc159480f78eff62bf39e8f6634d7b9eb24bac2a1e4ef1e43ac030 3546 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.dsc
- 2d5f3a75f1f08411ea83756f8e410edf71173daf38daf66d8241aed74f964603 66937 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.debian.tar.gz
+ 28f576166bb6e6ca5e9811d53a33ff6f7461cf848e18a1c00704a1a930756ff4 3172 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.dsc
+ 69ab72ec7b94af2b2204e4270f7b4a58e3dda2b0ab1dbd2a8c07b012d09f3c3a 66570 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.debian.tar.gz
 Files: 
- 9e13b4ef56bf3de4317e200c02edbbfd 3546 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.dsc
- 4b43763655053ed3c89f2567cf582571 66937 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.debian.tar.gz
+ 1d3df0812cbce05253725acbd28460a0 3172 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.dsc
+ 7f4bb35c3f9d3c9936c61da971f83ba7 66570 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true5.debian.tar.gz

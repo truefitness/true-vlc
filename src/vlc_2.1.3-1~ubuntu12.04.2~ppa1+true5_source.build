@@ -7,10 +7,10 @@ dpkg-buildpackage: source changed by Michael Nolan <mpnolan@truefitness.com>
 dh clean --parallel --with autoreconf
    dh_testdir -O--parallel
    debian/rules override_dh_auto_clean
-make[1]: Entering directory `/home/mpnolan/true-vlc/src/vlc-2.1.3'
-rm -f debian/vlc.install debian/vlc-nox.install
+make[1]: Entering directory `/home/true/true-vlc/src/vlc-2.1.3'
+rm -f debian/vlc.install debian/vlc-nox.install debian/vlc-plugin-fluidsynth.install debian/vlc-plugin-jack.install debian/vlc-plugin-notify.install debian/vlc-plugin-sdl.install debian/vlc-plugin-svg.install
 dh_auto_clean
-make[1]: Leaving directory `/home/mpnolan/true-vlc/src/vlc-2.1.3'
+make[1]: Leaving directory `/home/true/true-vlc/src/vlc-2.1.3'
    dh_autoreconf_clean -O--parallel
    dh_clean -O--parallel
  dpkg-source -b vlc-2.1.3

@@ -4,6 +4,6 @@
 *~
 *.debian.tar.gz
 *.orig.tar*
-src/vlc-2.1.3
+src/vlc-2.*
 repo
 *.deb
