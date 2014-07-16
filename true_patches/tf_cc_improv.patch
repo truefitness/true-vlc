@@ -1,0 +1,1568 @@
+diff -r -u '--exclude=*.Plo' vlc-2.1.3-orig/modules/codec/cc.c vlc-2.1.3/modules/codec/cc.c
+--- vlc-2.1.3-orig/modules/codec/cc.c	2013-09-12 10:18:33.000000000 -0500
++++ vlc-2.1.3/modules/codec/cc.c	2014-07-08 14:33:31.764603727 -0500
+@@ -331,7 +331,7 @@
+ 
+     /* The "leavetext" alignment is a special mode where the subpicture
+        region itself gets aligned, but the text inside it does not */
+-    p_spu_sys->align = SUBPICTURE_ALIGN_LEAVETEXT;
++    p_spu_sys->align = SUBPICTURE_ALIGN_LEAVETEXT | SUBPICTURE_ALIGN_TOP;
+     p_spu_sys->text  = psz_subtitle;
+     p_spu_sys->html  = psz_html;
+     p_spu_sys->i_font_height_percent = 5;
+@@ -929,7 +929,6 @@
+     const eia608_color_t *p_color = screen->colors[i_row];
+     const eia608_font_t *p_font = screen->fonts[i_row];
+     int i_start;
+-    int i_end;
+     int x;
+     eia608_color_t last_color = EIA608_COLOR_DEFAULT;
+     bool     b_last_italics = false;
+@@ -951,13 +950,7 @@
+         i_start++;
+     }
+ 
+-    /* Search the end */
+-    i_end = EIA608_SCREEN_COLUMNS-1;
+-    while( i_end > i_start && p_char[i_end] == ' ' )
+-        i_end--;
+-
+-    /* */
+-    for( x = i_start; x <= i_end; x++ )
++    for( x = i_start; x < EIA608_SCREEN_COLUMNS; x++ )
+     {
+         eia608_color_t color = p_color[x];
+         bool b_italics = p_font[x] & EIA608_FONT_ITALICS;
+@@ -1025,6 +1018,10 @@
+             case '&':
+                 CAT( "&amp;" );
+                 break;
++            case ' ':
++                Eia608TextUtf8( utf8, 0x89 );
++                CAT( utf8 );
++                break;
+             default:
+                 Eia608TextUtf8( utf8, p_char[x] );
+                 CAT( utf8 );
+diff -r -u '--exclude=*.Plo' vlc-2.1.3-orig/modules/text_renderer/freetype.c vlc-2.1.3/modules/text_renderer/freetype.c
+--- vlc-2.1.3-orig/modules/text_renderer/freetype.c	2014-01-27 10:07:45.000000000 -0600
++++ vlc-2.1.3/modules/text_renderer/freetype.c	2014-07-08 14:49:34.512657751 -0500
+@@ -95,6 +95,8 @@
+ #include FT_GLYPH_H
+ #include FT_STROKER_H
+ #include FT_SYNTHESIS_H
++#include FT_CACHE_H
++#include FT_BITMAP_H
+ 
+ #define FT_FLOOR(X)     ((X & -64) >> 6)
+ #define FT_CEIL(X)      (((X + 63) & -64) >> 6)
+@@ -301,11 +303,18 @@
+  * Local prototypes
+  *****************************************************************************/
+ 
++struct FTC_MySBit_Rec {
++    FTC_SBit sbit;
++    int top;
++    int left;
++};
++typedef struct FTC_MySBit_Rec* FTC_MySBit;
++
+ typedef struct
+ {
+-    FT_BitmapGlyph p_glyph;
+-    FT_BitmapGlyph p_outline;
+-    FT_BitmapGlyph p_shadow;
++    FTC_MySBit     p_glyph;
++    FTC_MySBit     p_outline;
++    FTC_MySBit     p_shadow;
+     uint32_t       i_color;             /* ARGB color */
+     int            i_line_offset;       /* underline/strikethrough offset */
+     int            i_line_thickness;    /* underline/strikethrough thickness */
+@@ -334,6 +343,13 @@
+     font_stack_t  *p_next;
+ };
+ 
++typedef struct cached_faces_t cached_faces_t;
++struct cached_faces_t
++{
++    text_style_t   *style;
++    cached_faces_t *p_next;
++};
++
+ /*****************************************************************************
+  * filter_sys_t: freetype local data
+  *****************************************************************************
+@@ -343,8 +359,11 @@
+ struct filter_sys_t
+ {
+     FT_Library     p_library;   /* handle to library     */
+-    FT_Face        p_face;      /* handle to face object */
++    FTC_FaceID     p_face_id;   /* handle to face object */
+     FT_Stroker     p_stroker;
++    FTC_Manager    p_ftc_manager;
++    FTC_SBitCache  p_ftc_sbit_cache;
++    cached_faces_t *faces;
+     uint8_t        i_font_opacity;
+     int            i_font_size;
+     bool           b_font_bold;
+@@ -456,28 +475,6 @@
+     return i_size;
+ }
+ 
+-static int SetFontSize( filter_t *p_filter, int i_size )
+-{
+-    filter_sys_t *p_sys = p_filter->p_sys;
+-
+-    if( !i_size )
+-    {
+-        i_size = GetFontSize( p_filter );
+-
+-        msg_Dbg( p_filter, "using fontsize: %i", i_size );
+-    }
+-
+-    p_sys->i_font_size = i_size;
+-
+-    if( FT_Set_Pixel_Sizes( p_sys->p_face, 0, i_size ) )
+-    {
+-        msg_Err( p_filter, "couldn't set font size to %d", i_size );
+-        return VLC_EGENERIC;
+-    }
+-
+-    return VLC_SUCCESS;
+-}
+-
+ #ifdef HAVE_STYLES
+ #ifdef HAVE_FONTCONFIG
+ static void FontConfig_BuildCache( filter_t *p_filter )
+@@ -894,18 +891,18 @@
+         for( i = 0; i < p_line->i_character_count; i++ )
+         {
+             const line_character_t *ch = &p_line->p_character[i];
+-            FT_BitmapGlyph p_glyph = ch->p_glyph;
++            FTC_MySBit p_glyph = ch->p_glyph;
+ 
+             int i_glyph_y = i_align_top  - p_glyph->top  + p_bbox->yMax + p_line->i_base_line;
+             int i_glyph_x = i_align_left + p_glyph->left - p_bbox->xMin;
+ 
+-            for( y = 0; y < p_glyph->bitmap.rows; y++ )
++            for( y = 0; y < p_glyph->sbit->height; y++ )
+             {
+-                for( x = 0; x < p_glyph->bitmap.width; x++ )
++                for( x = 0; x < p_glyph->sbit->width; x++ )
+                 {
+-                    if( p_glyph->bitmap.buffer[y * p_glyph->bitmap.width + x] )
++                    if( p_glyph->sbit->buffer[y * p_glyph->sbit->width + x] )
+                         p_dst[(i_glyph_y + y) * i_pitch + (i_glyph_x + x)] =
+-                            (p_glyph->bitmap.buffer[y * p_glyph->bitmap.width + x] + 8)/16;
++                            (p_glyph->sbit->buffer[y * p_glyph->sbit->width + x] + 8)/16;
+                 }
+             }
+         }
+@@ -946,30 +943,71 @@
+ static void FillYUVAPicture( picture_t *p_picture,
+                              int i_a, int i_y, int i_u, int i_v )
+ {
+-    memset( p_picture->p[0].p_pixels, i_y,
+-            p_picture->p[0].i_pitch * p_picture->p[0].i_lines );
+-    memset( p_picture->p[1].p_pixels, i_u,
+-            p_picture->p[1].i_pitch * p_picture->p[1].i_lines );
+-    memset( p_picture->p[2].p_pixels, i_v,
+-            p_picture->p[2].i_pitch * p_picture->p[2].i_lines );
++    /* If the goal is to just make the region empty, just fill the alpha channel. */
++    if ( i_a != 0x00 )
++    {
++        memset( p_picture->p[0].p_pixels, i_y,
++                p_picture->p[0].i_pitch * p_picture->p[0].i_lines );
++        memset( p_picture->p[1].p_pixels, i_u,
++                p_picture->p[1].i_pitch * p_picture->p[1].i_lines );
++        memset( p_picture->p[2].p_pixels, i_v,
++                p_picture->p[2].i_pitch * p_picture->p[2].i_lines );
++    }
+     memset( p_picture->p[3].p_pixels, i_a,
+             p_picture->p[3].i_pitch * p_picture->p[3].i_lines );
+ }
+ 
++static inline unsigned div255(unsigned v)
++{
++    /* It is exact for 8 bits, and has a max error of 1 for 9 and 10 bits
++     * while respecting full opacity/transparency */
++    return ((v >> 8) + v + 1) >> 8;
++}
++
+ static inline void BlendYUVAPixel( picture_t *p_picture,
+                                    int i_picture_x, int i_picture_y,
+                                    int i_a, int i_y, int i_u, int i_v,
+                                    int i_alpha )
+ {
+-    int i_an = i_a * i_alpha / 255;
+-
+-    uint8_t *p_y = &p_picture->p[0].p_pixels[i_picture_y * p_picture->p[0].i_pitch + i_picture_x];
+-    uint8_t *p_u = &p_picture->p[1].p_pixels[i_picture_y * p_picture->p[1].i_pitch + i_picture_x];
+-    uint8_t *p_v = &p_picture->p[2].p_pixels[i_picture_y * p_picture->p[2].i_pitch + i_picture_x];
+-    uint8_t *p_a = &p_picture->p[3].p_pixels[i_picture_y * p_picture->p[3].i_pitch + i_picture_x];
++    uint8_t *p_y;
++    uint8_t *p_u;
++    uint8_t *p_v;
++    uint8_t *p_a;
++
++    // Moving the i_alpha check here brings it down from 120 to around 80
++    if (i_alpha == 0x00) {
++	return;
++    }
++
++    plane_t *p0 = &p_picture->p[0];
++    plane_t *p1 = &p_picture->p[1];
++    plane_t *p2 = &p_picture->p[2];
++    plane_t *p3 = &p_picture->p[3];
++
++    int pitch0 = p0->i_pitch;
++    if (pitch0 == p1->i_pitch && 
++	pitch0 == p2->i_pitch &&
++        pitch0 == p3->i_pitch)
++    {
++        /* It's common for the strides to be the same avoid some extra
++           multiplication */
++	int offset = i_picture_y * pitch0 + i_picture_x;
++	p_y = &p0->p_pixels[offset];
++ 	p_u = &p1->p_pixels[offset];
++    	p_v = &p2->p_pixels[offset];
++    	p_a = &p3->p_pixels[offset];
++    }
++    else
++    {
++        p_y = &p0->p_pixels[i_picture_y * p0->i_pitch + i_picture_x];
++        p_u = &p1->p_pixels[i_picture_y * p1->i_pitch + i_picture_x];
++        p_v = &p2->p_pixels[i_picture_y * p2->i_pitch + i_picture_x];
++        p_a = &p3->p_pixels[i_picture_y * p3->i_pitch + i_picture_x];
++    }
+ 
++    int i_an = div255(i_a * i_alpha);
+     int i_ao = *p_a;
+-    if( i_ao == 0 )
++    if( i_ao == 0 || i_alpha == 0xff )
+     {
+         *p_y = i_y;
+         *p_u = i_u;
+@@ -978,19 +1016,27 @@
+     }
+     else
+     {
+-        *p_a = 255 - (255 - *p_a) * (255 - i_an) / 255;
++	int ndelta = 255 - i_an;
++        *p_a = 255 - div255((255 - *p_a) * ndelta);
+         if( *p_a != 0 )
+         {
+-            *p_y = ( *p_y * i_ao * (255 - i_an) / 255 + i_y * i_an ) / *p_a;
+-            *p_u = ( *p_u * i_ao * (255 - i_an) / 255 + i_u * i_an ) / *p_a;
+-            *p_v = ( *p_v * i_ao * (255 - i_an) / 255 + i_v * i_an ) / *p_a;
+-        }
++	    int iao_times_ndelta = i_ao * ndelta;
++            *p_y = ( div255(*p_y * iao_times_ndelta) + i_y * i_an ) / *p_a;
++            *p_u = ( div255(*p_u * iao_times_ndelta) + i_u * i_an ) / *p_a;
++            *p_v = ( div255(*p_v * iao_times_ndelta) + i_v * i_an ) / *p_a;
++	}
+     }
+ }
+ 
+ static void FillRGBAPicture( picture_t *p_picture,
+                              int i_a, int i_r, int i_g, int i_b )
+ {
++    if (i_a == 0x00) {
++        /* If alpha channel is zero, cheat and just use a memset */
++        memset(p_picture->p->p_pixels, 0x00,
++               p_picture->p[0].i_visible_lines * p_picture->p->i_pitch);
++        return;
++    }
+     for( int dy = 0; dy < p_picture->p[0].i_visible_lines; dy++ )
+     {
+         for( int dx = 0; dx < p_picture->p[0].i_visible_pitch; dx += 4 )
+@@ -1009,12 +1055,16 @@
+                                    int i_a, int i_r, int i_g, int i_b,
+                                    int i_alpha )
+ {
+-    int i_an = i_a * i_alpha / 255;
++    if (i_alpha == 0x00) {
++	return;
++    }
++
++    int i_an = div255(i_a * i_alpha);
+ 
+     uint8_t *p_rgba = &p_picture->p->p_pixels[i_picture_y * p_picture->p->i_pitch + 4 * i_picture_x];
+ 
+     int i_ao = p_rgba[3];
+-    if( i_ao == 0 )
++    if( i_ao == 0 || i_alpha == 0xff )
+     {
+         p_rgba[0] = i_r;
+         p_rgba[1] = i_g;
+@@ -1023,12 +1073,14 @@
+     }
+     else
+     {
+-        p_rgba[3] = 255 - (255 - p_rgba[3]) * (255 - i_an) / 255;
++	int ndelta = 255 - i_an;
++        p_rgba[3] = 255 - div255((255 - p_rgba[3]) * ndelta);
+         if( p_rgba[3] != 0 )
+         {
+-            p_rgba[0] = ( p_rgba[0] * i_ao * (255 - i_an) / 255 + i_r * i_an ) / p_rgba[3];
+-            p_rgba[1] = ( p_rgba[1] * i_ao * (255 - i_an) / 255 + i_g * i_an ) / p_rgba[3];
+-            p_rgba[2] = ( p_rgba[2] * i_ao * (255 - i_an) / 255 + i_b * i_an ) / p_rgba[3];
++            int iao_times_ndelta = i_ao * ndelta;
++            p_rgba[0] = ( div255(p_rgba[0] * iao_times_ndelta) + i_r * i_an ) / p_rgba[3];
++            p_rgba[1] = ( div255(p_rgba[1] * iao_times_ndelta) + i_r * i_an ) / p_rgba[3];
++            p_rgba[2] = ( div255(p_rgba[2] * iao_times_ndelta) + i_r * i_an ) / p_rgba[3];
+         }
+     }
+ }
+@@ -1036,16 +1088,16 @@
+ static inline void BlendAXYZGlyph( picture_t *p_picture,
+                                    int i_picture_x, int i_picture_y,
+                                    int i_a, int i_x, int i_y, int i_z,
+-                                   FT_BitmapGlyph p_glyph,
++                                   FTC_MySBit p_glyph,
+                                    void (*BlendPixel)(picture_t *, int, int, int, int, int, int, int) )
+ 
+ {
+-    for( int dy = 0; dy < p_glyph->bitmap.rows; dy++ )
++    for( int dy = 0; dy < p_glyph->sbit->height; dy++ )
+     {
+-        for( int dx = 0; dx < p_glyph->bitmap.width; dx++ )
++        for( int dx = 0; dx < p_glyph->sbit->width; dx++ )
+             BlendPixel( p_picture, i_picture_x + dx, i_picture_y + dy,
+                         i_a, i_x, i_y, i_z,
+-                        p_glyph->bitmap.buffer[dy * p_glyph->bitmap.width + dx] );
++                        p_glyph->sbit->buffer[dy * p_glyph->sbit->width + dx] );
+     }
+ }
+ 
+@@ -1056,7 +1108,7 @@
+                                   const line_character_t *p_next,
+                                   void (*BlendPixel)(picture_t *, int, int, int, int, int, int, int) )
+ {
+-    int i_line_width = p_current->p_glyph->bitmap.width;
++    int i_line_width = p_current->p_glyph->sbit->width;
+     if( p_next )
+         i_line_width = p_next->p_glyph->left - p_current->p_glyph->left;
+ 
+@@ -1103,7 +1155,7 @@
+         /* Find the tallest character in the line */
+         for( int i = 0; i < p_line->i_character_count; i++ ) {
+             const line_character_t *ch = &p_line->p_character[i];
+-            FT_BitmapGlyph p_glyph = ch->p_outline ? ch->p_outline : ch->p_glyph;
++            FTC_MySBit p_glyph = ch->p_outline ? ch->p_outline : ch->p_glyph;
+             if (p_glyph->top > max_height)
+                 max_height = p_glyph->top;
+         }
+@@ -1111,8 +1163,8 @@
+         /* Compute the background for the line (identify leading/trailing space) */
+         for( int i = 0; i < p_line->i_character_count; i++ ) {
+             const line_character_t *ch = &p_line->p_character[i];
+-            FT_BitmapGlyph p_glyph = ch->p_outline ? ch->p_outline : ch->p_glyph;
+-            if (p_glyph && p_glyph->bitmap.rows > 0) {
++            FTC_MySBit p_glyph = ch->p_outline ? ch->p_outline : ch->p_glyph;
++            if (p_glyph && p_glyph->sbit->height > 0) {
+                 // Found a non-whitespace character
+                 line_start = i_align_left + p_glyph->left - p_bbox->xMin;
+                 break;
+@@ -1127,10 +1179,10 @@
+         /* Find right boundary for bounding box for background */
+         for( int i = p_line->i_character_count; i > 0; i-- ) {
+             const line_character_t *ch = &p_line->p_character[i - 1];
+-            FT_BitmapGlyph p_glyph = ch->p_shadow ? ch->p_shadow : ch->p_glyph;
+-            if (p_glyph && p_glyph->bitmap.rows > 0) {
++            FTC_MySBit p_glyph = ch->p_shadow ? ch->p_shadow : ch->p_glyph;
++            if (p_glyph && p_glyph->sbit->height > 0) {
+                 // Found a non-whitespace character
+-                line_end = i_align_left + p_glyph->left - p_bbox->xMin + p_glyph->bitmap.width;
++                line_end = i_align_left + p_glyph->left - p_bbox->xMin + p_glyph->sbit->width;
+                 break;
+             }
+         }
+@@ -1140,10 +1192,10 @@
+         ExtractComponents( 0x000000, &i_x, &i_y, &i_z );
+ 
+         /* Compute the upper boundary for the background */
+-        if ((i_align_top + p_line->i_base_line - max_height) < 0)
+-            line_top = i_align_top + p_line->i_base_line;
++        if ((i_align_top + p_bbox->yMax + p_line->i_base_line - max_height) < 0)
++            line_top = i_align_top + p_bbox->yMax + p_line->i_base_line;
+         else
+-            line_top = i_align_top + p_line->i_base_line - max_height;
++            line_top = i_align_top + p_bbox->yMax + p_line->i_base_line - max_height;
+ 
+         /* Compute lower boundary for the background */
+         line_bottom =  __MIN(line_top + p_line->i_height, p_region->fmt.i_visible_height);
+@@ -1225,7 +1277,7 @@
+             for( int i = 0; i < p_line->i_character_count; i++ )
+             {
+                 const line_character_t *ch = &p_line->p_character[i];
+-                FT_BitmapGlyph p_glyph = g == 0 ? ch->p_shadow : g == 1 ? ch->p_outline : ch->p_glyph;
++                FTC_MySBit p_glyph = g == 0 ? ch->p_shadow : g == 1 ? ch->p_outline : ch->p_glyph;
+                 if( !p_glyph )
+                     continue;
+ 
+@@ -1892,11 +1944,9 @@
+     for( int i = 0; i < p_line->i_character_count; i++ )
+     {
+         line_character_t *ch = &p_line->p_character[i];
+-        FT_Done_Glyph( (FT_Glyph)ch->p_glyph );
+-        if( ch->p_outline )
+-            FT_Done_Glyph( (FT_Glyph)ch->p_outline );
+-        if( ch->p_shadow )
+-            FT_Done_Glyph( (FT_Glyph)ch->p_shadow );
++	free(ch->p_glyph);
++	free(ch->p_outline);
++	free(ch->p_shadow);
+     }
+ 
+     free( p_line->p_character );
+@@ -1957,8 +2007,6 @@
+                  && (p_style->i_style_flags & (STYLE_BOLD | STYLE_ITALIC))
+                                                           == i_style_received )
+                     return p_face;
+-
+-                FT_Done_Face( p_face );
+             }
+             i_font_idx++;
+         }
+@@ -1966,10 +2014,65 @@
+     return NULL;
+ }
+ 
+-static FT_Face LoadFace( filter_t *p_filter,
+-                         const text_style_t *p_style )
++static bool FaceStyleEquals( const text_style_t *p_style1,
++                             const text_style_t *p_style2 )
+ {
++    if( !p_style1 || !p_style2 )
++        return false;
++    if( p_style1 == p_style2 )
++        return true;
++
++    const int i_style_mask = STYLE_BOLD | STYLE_ITALIC;
++    return (p_style1->i_style_flags & i_style_mask) == (p_style2->i_style_flags & i_style_mask) &&
++           !strcmp( p_style1->psz_fontname, p_style2->psz_fontname );
++}
++
++static FTC_FaceID CreateFace(filter_t *p_filter, const text_style_t *p_style)
++{
++    /* Loads a face into memory and makes it available through the cache for
++       subsequent lookups */
+     filter_sys_t *p_sys = p_filter->p_sys;
++    cached_faces_t *cur = p_sys->faces;
++
++    /* See if the style in question is already being tracked */
++    while (cur != NULL) {
++        if(FaceStyleEquals( p_style, cur->style ))
++        {
++            /* We're already tracking it! */
++            return (FTC_FaceID) cur;
++	}
++        cur = cur->p_next;
++    }
++
++    /* Insert it into our list of faces we are tracking */
++    cur = p_sys->faces;
++    if (cur)
++    {
++        while (cur->p_next != NULL)
++            cur = cur->p_next;
++        cur->p_next = malloc(sizeof(cached_faces_t));
++        cur = cur->p_next;
++    } else {
++        p_sys->faces = malloc(sizeof(cached_faces_t));
++        cur = p_sys->faces;
++    }
++
++    if (cur)
++    {
++        cur->style = text_style_Duplicate(p_style);
++        cur->p_next = NULL;
++        return (FTC_FaceID) cur;
++    }
++    return NULL;
++}
++
++/* Low level function which gets the face from FreeType */
++static FT_Error LoadFace( FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face* aface )
++{
++    filter_t             *p_filter = (filter_t *) request_data;
++    filter_sys_t         *p_sys = p_filter->p_sys;
++    cached_faces_t       *cur = (cached_faces_t *) face_id;
++    const text_style_t   *p_style = cur->style;
+ 
+     /* Look for a match amongst our attachments first */
+     FT_Face p_face = LoadEmbeddedFace( p_sys, p_style );
+@@ -2001,7 +2104,7 @@
+         psz_fontfile = NULL;
+ #endif
+         if( !psz_fontfile )
+-            return NULL;
++            return -1;
+ 
+         if( *psz_fontfile == '\0' )
+         {
+@@ -2021,36 +2124,24 @@
+         free( psz_fontfile );
+     }
+     if( !p_face )
+-        return NULL;
++        return -1;
+ 
+     if( FT_Select_Charmap( p_face, ft_encoding_unicode ) )
+     {
+         /* We've loaded a font face which is unhelpful for actually
+          * rendering text - fallback to the default one.
+          */
+-        FT_Done_Face( p_face );
+-        return NULL;
++       return -1;
+     }
+-    return p_face;
++    *aface = p_face;
++    return 0;
+ }
+ 
+-static bool FaceStyleEquals( const text_style_t *p_style1,
+-                             const text_style_t *p_style2 )
+-{
+-    if( !p_style1 || !p_style2 )
+-        return false;
+-    if( p_style1 == p_style2 )
+-        return true;
+-
+-    const int i_style_mask = STYLE_BOLD | STYLE_ITALIC;
+-    return (p_style1->i_style_flags & i_style_mask) == (p_style2->i_style_flags & i_style_mask) &&
+-           !strcmp( p_style1->psz_fontname, p_style2->psz_fontname );
+-}
+ 
+-static int GetGlyph( filter_t *p_filter,
+-                     FT_Glyph *pp_glyph,   FT_BBox *p_glyph_bbox,
+-                     FT_Glyph *pp_outline, FT_BBox *p_outline_bbox,
+-                     FT_Glyph *pp_shadow,  FT_BBox *p_shadow_bbox,
++static int GetGlyph( filter_t *p_filter, FTC_FaceID p_face_id, int font_height,
++                     FTC_SBit *pp_glyph,   FT_BBox *p_glyph_bbox,
++                     FTC_SBit *pp_outline, FT_BBox *p_outline_bbox,
++                     FTC_SBit *pp_shadow,  FT_BBox *p_shadow_bbox,
+ 
+                      FT_Face  p_face,
+                      int i_glyph_index,
+@@ -2058,88 +2149,49 @@
+                      FT_Vector *p_pen,
+                      FT_Vector *p_pen_shadow )
+ {
+-    if( FT_Load_Glyph( p_face, i_glyph_index, FT_LOAD_NO_BITMAP | FT_LOAD_DEFAULT ) &&
+-        FT_Load_Glyph( p_face, i_glyph_index, FT_LOAD_DEFAULT ) )
+-    {
+-        msg_Err( p_filter, "unable to render text FT_Load_Glyph failed" );
+-        return VLC_EGENERIC;
+-    }
+-
+-    /* Do synthetic styling now that Freetype supports it;
+-     * ie. if the font we have loaded is NOT already in the
+-     * style that the tags want, then switch it on; if they
+-     * are then don't. */
+-    if ((i_style_flags & STYLE_BOLD) && !(p_face->style_flags & FT_STYLE_FLAG_BOLD))
+-        FT_GlyphSlot_Embolden( p_face->glyph );
+-    if ((i_style_flags & STYLE_ITALIC) && !(p_face->style_flags & FT_STYLE_FLAG_ITALIC))
+-        FT_GlyphSlot_Oblique( p_face->glyph );
+-
+-    FT_Glyph glyph;
+-    if( FT_Get_Glyph( p_face->glyph, &glyph ) )
+-    {
+-        msg_Err( p_filter, "unable to render text FT_Get_Glyph failed" );
+-        return VLC_EGENERIC;
+-    }
++    filter_sys_t   *p_sys = p_filter->p_sys;
+ 
+-    FT_Glyph outline = NULL;
+-    if( p_filter->p_sys->p_stroker )
+-    {
+-        outline = glyph;
+-        if( FT_Glyph_StrokeBorder( &outline, p_filter->p_sys->p_stroker, 0, 0 ) )
+-            outline = NULL;
++    FTC_SBit cachesbit;
++    FTC_Node ftcNode;
++    FTC_ImageTypeRec image_type;
++    image_type.face_id = p_face_id;
++    image_type.height = font_height;
++    image_type.width = 0;
++    image_type.flags = FT_LOAD_NO_BITMAP | FT_LOAD_DEFAULT;
++
++    if (FTC_SBitCache_Lookup(p_sys->p_ftc_sbit_cache, &image_type, i_glyph_index,
++                             &cachesbit, &ftcNode))
++    {
++        printf("Failed to lookup glyph via imagecache\n");
++	return VLC_EGENERIC;
+     }
+ 
+-    FT_Glyph shadow = NULL;
+-    if( p_filter->p_sys->i_shadow_opacity > 0 )
+-    {
+-        shadow = outline ? outline : glyph;
+-        if( FT_Glyph_To_Bitmap( &shadow, FT_RENDER_MODE_NORMAL, p_pen_shadow, 0  ) )
+-        {
+-            shadow = NULL;
+-        }
+-        else
+-        {
+-            FT_Glyph_Get_CBox( shadow, ft_glyph_bbox_pixels, p_shadow_bbox );
+-        }
+-    }
+-    *pp_shadow = shadow;
+ 
+-    if( FT_Glyph_To_Bitmap( &glyph, FT_RENDER_MODE_NORMAL, p_pen, 1) )
+-    {
+-        FT_Done_Glyph( glyph );
+-        if( outline )
+-            FT_Done_Glyph( outline );
+-        if( shadow )
+-            FT_Done_Glyph( shadow );
+-        return VLC_EGENERIC;
+-    }
+-    FT_Glyph_Get_CBox( glyph, ft_glyph_bbox_pixels, p_glyph_bbox );
+-    *pp_glyph = glyph;
++    *pp_glyph = cachesbit;
++    p_glyph_bbox->xMin = p_pen->x;
++    p_glyph_bbox->xMax = p_pen->x + cachesbit->width;
++    p_glyph_bbox->yMin = p_pen->y + cachesbit->top - cachesbit->height;
++    p_glyph_bbox->yMax = p_pen->y + cachesbit->top;
+ 
+-    if( outline )
+-    {
+-        FT_Glyph_To_Bitmap( &outline, FT_RENDER_MODE_NORMAL, p_pen, 1 );
+-        FT_Glyph_Get_CBox( outline, ft_glyph_bbox_pixels, p_outline_bbox );
+-    }
+-    *pp_outline = outline;
++    *pp_outline = NULL;
++    *pp_shadow = NULL;
+ 
+     return VLC_SUCCESS;
+ }
+ 
+-static void FixGlyph( FT_Glyph glyph, FT_BBox *p_bbox, FT_Face face, const FT_Vector *p_pen )
++static void FixGlyph( FTC_MySBit glyph, FT_BBox *p_bbox, FT_Face face, const FT_Vector *p_pen )
+ {
+-    FT_BitmapGlyph glyph_bmp = (FT_BitmapGlyph)glyph;
+     if( p_bbox->xMin >= p_bbox->xMax )
+     {
+-        p_bbox->xMin = FT_CEIL(p_pen->x);
+-        p_bbox->xMax = FT_CEIL(p_pen->x + face->glyph->advance.x);
+-        glyph_bmp->left = p_bbox->xMin;
++        p_bbox->xMin = p_pen->x;
++        p_bbox->xMax = p_pen->x + glyph->sbit->xadvance;
++        glyph->left = p_bbox->xMin;
+     }
+     if( p_bbox->yMin >= p_bbox->yMax )
+     {
+-        p_bbox->yMax = FT_CEIL(p_pen->y);
+-        p_bbox->yMin = FT_CEIL(p_pen->y + face->glyph->advance.y);
+-        glyph_bmp->top  = p_bbox->yMax;
++        p_bbox->yMax = p_pen->y;
++        p_bbox->yMin = p_pen->y + glyph->sbit->yadvance;
++        glyph->top = p_bbox->yMax;
+     }
+ }
+ 
+@@ -2159,7 +2211,8 @@
+                          uni_char_t *psz_text,
+                          text_style_t **pp_styles,
+                          uint32_t *pi_k_dates,
+-                         int i_len )
++                         int i_len,
++                         int *pi_y_offset)
+ {
+     filter_sys_t   *p_sys = p_filter->p_sys;
+     uni_char_t     *p_fribidi_string = NULL;
+@@ -2263,7 +2316,11 @@
+     int i_face_height_previous = 0;
+     int i_base_line = 0;
+     const text_style_t *p_previous_style = NULL;
+-    FT_Face p_face = NULL;
++    FT_Face p_current_face = NULL;
++    FTC_FaceID p_face_id = NULL;
++    FT_Size p_current_size;
++    int i_leading_blank_line = 1;
++
+     for( int i_start = 0; i_start < i_len; )
+     {
+         /* Compute the length of the current text line */
+@@ -2271,6 +2328,18 @@
+         while( i_start + i_length < i_len && psz_text[i_start + i_length] != '\n' )
+             i_length++;
+ 
++        /* Determine if this is a completely blank line */
++        int i_length2 = 0;
++        while( i_start + i_length2 < i_len && psz_text[i_start + i_length2] != '\n')
++        {
++            if (psz_text[i_start + i_length2] != 0xa0)
++            {
++                i_leading_blank_line = 0;
++                break;
++            }
++            i_length2++;
++        }
++
+         /* Render the text line (or the begining if too long) into 0 or 1 glyph line */
+         line_desc_t *p_line = i_length > 0 ? NewLine( i_length ) : NULL;
+         int i_index = i_start;
+@@ -2327,17 +2396,26 @@
+             /* (Re)load/reconfigure the face if needed */
+             if( !FaceStyleEquals( p_current_style, p_previous_style ) )
+             {
+-                if( p_face )
+-                    FT_Done_Face( p_face );
+                 p_previous_style = NULL;
+-
+-                p_face = LoadFace( p_filter, p_current_style );
++		p_face_id = CreateFace(p_filter, p_current_style);
++		FTC_Manager_LookupFace(p_sys->p_ftc_manager, p_face_id, &p_current_face);
+             }
+-            FT_Face p_current_face = p_face ? p_face : p_sys->p_face;
++
++            FTC_FaceID p_current_face_id = p_face_id ? p_face_id : p_sys->p_face_id;
++
+             if( !p_previous_style || p_previous_style->i_font_size != p_current_style->i_font_size )
+             {
+-                if( FT_Set_Pixel_Sizes( p_current_face, 0, p_current_style->i_font_size ) )
++                FTC_Scaler scaler = malloc(sizeof (FTC_ScalerRec));
++		scaler->face_id = p_current_face_id;
++		scaler->height = p_current_style->i_font_size;
++		scaler->width = 20;
++		scaler->pixel = 1;
++
++		int ret = FTC_Manager_LookupSize(p_sys->p_ftc_manager, scaler, &p_current_size);
++		if (ret) {
+                     msg_Err( p_filter, "Failed to set font size to %d", p_current_style->i_font_size );
++		}
++
+                 if( p_sys->p_stroker )
+                 {
+                     double f_outline_thickness = var_InheritInteger( p_filter, "freetype-outline-thickness" ) / 100.0;
+@@ -2352,7 +2430,17 @@
+             p_previous_style = p_current_style;
+ 
+             i_face_height = __MAX(i_face_height, FT_CEIL(FT_MulFix(p_current_face->height,
+-                                                                   p_current_face->size->metrics.y_scale)));
++                                                                   p_current_size->metrics.y_scale)));
++
++
++            /* See if the line is nothing but whitespace.  If so, adjust the bounding
++               box's size and position to not include it in the final image */
++            if (i_leading_blank_line)
++            {
++                i_start += i_length + 1;
++                *pi_y_offset+= i_face_height;
++                break;
++            }
+ 
+             /* Render the part */
+             bool b_break_line = false;
+@@ -2370,28 +2458,40 @@
+ 
+                 /* Get the glyph bitmap and its bounding box and all the associated properties */
+                 FT_Vector pen_new = {
+-                    .x = pen.x + kerning.x,
+-                    .y = pen.y + kerning.y,
++                    .x = pen.x + FT_CEIL(kerning.x),
++                    .y = pen.y + FT_CEIL(kerning.y),
+                 };
+                 FT_Vector pen_shadow_new = {
+                     .x = pen_new.x + p_sys->f_shadow_vector_x * (p_current_style->i_font_size << 6),
+                     .y = pen_new.y + p_sys->f_shadow_vector_y * (p_current_style->i_font_size << 6),
+                 };
+-                FT_Glyph glyph;
++                FTC_MySBit glyph = malloc(sizeof(struct FTC_MySBit_Rec));
+                 FT_BBox  glyph_bbox;
+-                FT_Glyph outline;
++                FTC_MySBit outline = malloc(sizeof(struct FTC_MySBit_Rec));
+                 FT_BBox  outline_bbox;
+-                FT_Glyph shadow;
++                FTC_MySBit shadow = malloc(sizeof(struct FTC_MySBit_Rec));
+                 FT_BBox  shadow_bbox;
+ 
+-                if( GetGlyph( p_filter,
+-                              &glyph, &glyph_bbox,
+-                              &outline, &outline_bbox,
+-                              &shadow, &shadow_bbox,
++		memset(glyph, 0, sizeof(struct FTC_MySBit_Rec));
++		memset(outline, 0, sizeof(struct FTC_MySBit_Rec));
++		memset(shadow, 0, sizeof(struct FTC_MySBit_Rec));
++
++                if( GetGlyph( p_filter, p_face_id, p_current_style->i_font_size,
++                              &glyph->sbit, &glyph_bbox,
++                              &outline->sbit, &outline_bbox,
++                              &shadow->sbit, &shadow_bbox,
+                               p_current_face, i_glyph_index, p_glyph_style->i_style_flags,
+                               &pen_new, &pen_shadow_new ) )
+                     goto next;
+ 
++		glyph->top = pen_new.y + glyph->sbit->top;
++		glyph->left = pen_new.x + glyph->sbit->left;
++
++		if (!outline->sbit)
++                   outline = NULL;
++		if (!shadow->sbit)
++                   shadow = NULL;
++
+                 FixGlyph( glyph, &glyph_bbox, p_current_face, &pen_new );
+                 if( outline )
+                     FixGlyph( outline, &outline_bbox, p_current_face, &pen_new );
+@@ -2410,10 +2510,10 @@
+                 if( p_glyph_style->i_style_flags & (STYLE_UNDERLINE | STYLE_STRIKEOUT) )
+                 {
+                     i_line_offset = abs( FT_FLOOR(FT_MulFix(p_current_face->underline_position,
+-                                                            p_current_face->size->metrics.y_scale)) );
++                                                            p_current_size->metrics.y_scale)) );
+ 
+                     i_line_thickness = abs( FT_CEIL(FT_MulFix(p_current_face->underline_thickness,
+-                                                              p_current_face->size->metrics.y_scale)) );
++                                                              p_current_size->metrics.y_scale)) );
+ 
+                     if( p_glyph_style->i_style_flags & STYLE_STRIKEOUT )
+                     {
+@@ -2421,7 +2521,7 @@
+                          * underline. That means that strikethrough takes precedence
+                          */
+                         i_line_offset -= abs( FT_FLOOR(FT_MulFix(p_current_face->descender*2,
+-                                                                 p_current_face->size->metrics.y_scale)) );
++                                                              p_current_size->metrics.y_scale)) );
+                     }
+                     else if( i_line_thickness > 0 )
+                     {
+@@ -2445,11 +2545,9 @@
+                                line_bbox_new.xMax - line_bbox_new.xMin >= (int)p_filter->fmt_out.video.i_visible_width;
+                 if( b_break_line )
+                 {
+-                    FT_Done_Glyph( glyph );
+-                    if( outline )
+-                        FT_Done_Glyph( outline );
+-                    if( shadow )
+-                        FT_Done_Glyph( shadow );
++                    free( glyph );
++                    free( outline );
++                    free( shadow );
+ 
+                     break_point_t *p_bp = NULL;
+                     if( break_point.i_index > i_start )
+@@ -2463,11 +2561,9 @@
+                         for( int i = p_bp->i_index; i < i_index; i++ )
+                         {
+                             line_character_t *ch = &p_line->p_character[i - i_start];
+-                            FT_Done_Glyph( (FT_Glyph)ch->p_glyph );
+-                            if( ch->p_outline )
+-                                FT_Done_Glyph( (FT_Glyph)ch->p_outline );
+-                            if( ch->p_shadow )
+-                                FT_Done_Glyph( (FT_Glyph)ch->p_shadow );
++                            free( ch->p_glyph );
++                            free( ch->p_outline );
++                            free( ch->p_shadow );
+                         }
+                         p_line->i_character_count = p_bp->i_index - i_start;
+ 
+@@ -2487,16 +2583,16 @@
+ 
+                 assert( p_line->i_character_count == i_index - i_start);
+                 p_line->p_character[p_line->i_character_count++] = (line_character_t){
+-                    .p_glyph = (FT_BitmapGlyph)glyph,
+-                    .p_outline = (FT_BitmapGlyph)outline,
+-                    .p_shadow = (FT_BitmapGlyph)shadow,
++                    .p_glyph = (FTC_MySBit)glyph,
++                    .p_outline = (FTC_MySBit)outline,
++                    .p_shadow = (FTC_MySBit)shadow,
+                     .i_color = i_color,
+                     .i_line_offset = i_line_offset,
+                     .i_line_thickness = i_line_thickness,
+                 };
+ 
+-                pen.x = pen_new.x + p_current_face->glyph->advance.x;
+-                pen.y = pen_new.y + p_current_face->glyph->advance.y;
++                pen.x = pen_new.x + (glyph->sbit->xadvance);
++                pen.y = pen_new.y + (glyph->sbit->yadvance);
+                 line_bbox = line_bbox_new;
+             next:
+                 i_glyph_last = i_glyph_index;
+@@ -2511,6 +2607,9 @@
+             if( b_break_line )
+                 break;
+         }
++
++        if (i_leading_blank_line)
++            continue;
+ #undef SAVE_BP
+         /* Update our baseline */
+         if( i_face_height_previous > 0 )
+@@ -2561,8 +2660,6 @@
+             break;
+         }
+     }
+-    if( p_face )
+-        FT_Done_Face( p_face );
+ 
+     free( pp_fribidi_styles );
+     free( p_fribidi_string );
+@@ -2710,15 +2807,18 @@
+                                    p_region_in->psz_text, p_style, 0 );
+     }
+ 
++    int i_y_offset = 0;
+     if( !rv && i_text_length > 0 )
+     {
+         rv = ProcessLines( p_filter,
+                            &p_lines, &bbox, &i_max_face_height,
+-                           psz_text, pp_styles, pi_k_durations, i_text_length );
++                           psz_text, pp_styles, pi_k_durations, i_text_length,
++                           &i_y_offset);
+     }
+ 
+     p_region_out->i_x = p_region_in->i_x;
+     p_region_out->i_y = p_region_in->i_y;
++    p_region_out->i_y += i_y_offset;
+ 
+     /* Don't attempt to render text that couldn't be layed out
+      * properly. */
+@@ -2800,11 +2900,9 @@
+ {
+     filter_t      *p_filter = (filter_t *)p_this;
+     filter_sys_t  *p_sys;
+-    char          *psz_fontfile   = NULL;
+     char          *psz_fontfamily = NULL;
+-    char          *psz_monofontfile   = NULL;
+     char          *psz_monofontfamily = NULL;
+-    int            i_error = 0, fontindex = 0, monofontindex = 0;
++    int            i_error = 0;
+ 
+     /* Allocate structure */
+     p_filter->p_sys = p_sys = malloc( sizeof(*p_sys) );
+@@ -2813,7 +2911,8 @@
+ 
+     p_sys->psz_fontfamily   = NULL;
+     p_sys->p_xml            = NULL;
+-    p_sys->p_face           = 0;
++    p_sys->p_face_id        = NULL;
++    p_sys->faces            = NULL;
+     p_sys->p_library        = 0;
+     p_sys->i_font_size      = 0;
+     p_sys->i_display_height = 0;
+@@ -2885,30 +2984,7 @@
+ #ifdef HAVE_STYLES
+ #ifdef HAVE_FONTCONFIG
+     FontConfig_BuildCache( p_filter );
+-
+-    /* */
+-    psz_fontfile = FontConfig_Select( NULL, psz_fontfamily, false, false,
+-                                      p_sys->i_default_font_size, &fontindex );
+-    psz_monofontfile = FontConfig_Select( NULL, psz_monofontfamily, false,
+-                                          false, p_sys->i_default_font_size,
+-                                          &monofontindex );
+-#elif defined(__APPLE__)
+-#if !TARGET_OS_IPHONE
+-    psz_fontfile = MacLegacy_Select( p_filter, psz_fontfamily, false, false, 0, &fontindex );
+-#endif
+-#elif defined(_WIN32)
+-    psz_fontfile = Win32_Select( p_filter, psz_fontfamily, false, false,
+-                                 p_sys->i_default_font_size, &fontindex );
+-
+ #endif
+-    msg_Dbg( p_filter, "Using %s as font from file %s", psz_fontfamily, psz_fontfile );
+-
+-    /* If nothing is found, use the default family */
+-    if( !psz_fontfile )
+-        psz_fontfile = strdup( psz_fontfamily );
+-    if( !psz_monofontfile )
+-        psz_monofontfile = strdup( psz_monofontfamily );
+-
+ #else /* !HAVE_STYLES */
+     /* Use the default file */
+     psz_fontfile = psz_fontfamily;
+@@ -2924,30 +3000,27 @@
+         goto error;
+     }
+ 
+-    i_error = FT_New_Face( p_sys->p_library, psz_fontfile ? psz_fontfile : "",
+-                           fontindex, &p_sys->p_face );
+-
+-    if( i_error == FT_Err_Unknown_File_Format )
+-    {
+-        msg_Err( p_filter, "file %s have unknown format",
+-                 psz_fontfile ? psz_fontfile : "(null)" );
+-        goto error;
+-    }
+-    else if( i_error )
++    i_error = FTC_Manager_New(p_sys->p_library, 0, 0, 0, LoadFace, p_filter, &p_sys->p_ftc_manager);
++    if( i_error )
+     {
+-        msg_Err( p_filter, "failed to load font file %s",
+-                 psz_fontfile ? psz_fontfile : "(null)" );
++        msg_Err( p_filter, "couldn't create cache manager" );
+         goto error;
+     }
+ 
+-    i_error = FT_Select_Charmap( p_sys->p_face, ft_encoding_unicode );
++    i_error = FTC_SBitCache_New(p_sys->p_ftc_manager, &p_sys->p_ftc_sbit_cache);
+     if( i_error )
+     {
+-        msg_Err( p_filter, "font has no unicode translation table" );
++        msg_Err( p_filter, "couldn't create sbit cache" );
+         goto error;
+     }
+ 
+-    if( SetFontSize( p_filter, 0 ) != VLC_SUCCESS ) goto error;
++    uint32_t i_font_color = var_InheritInteger( p_filter, "freetype-color" );
++    text_style_t *default_style = CreateStyle( p_sys->psz_fontfamily,
++                                               p_sys->i_font_size,
++					       (i_font_color & 0xffffff) |
++					       ((p_sys->i_font_opacity & 0xff) << 24),
++					       0x00ffffff, 0);
++    p_sys->p_face_id = CreateFace(p_filter, default_style);
+ 
+     p_sys->p_stroker = NULL;
+     if( f_outline_thickness > 0.001 )
+@@ -2965,20 +3038,10 @@
+ 
+     LoadFontsFromAttachments( p_filter );
+ 
+-#ifdef HAVE_STYLES
+-    free( psz_fontfile );
+-    free( psz_monofontfile );
+-#endif
+-
+     return VLC_SUCCESS;
+ 
+ error:
+-    if( p_sys->p_face ) FT_Done_Face( p_sys->p_face );
+     if( p_sys->p_library ) FT_Done_FreeType( p_sys->p_library );
+-#ifdef HAVE_STYLES
+-    free( psz_fontfile );
+-    free( psz_monofontfile );
+-#endif
+     free( psz_fontfamily );
+     free( psz_monofontfamily );
+     free( p_sys );
+@@ -3017,7 +3080,6 @@
+ 
+     if( p_sys->p_stroker )
+         FT_Stroker_Done( p_sys->p_stroker );
+-    FT_Done_Face( p_sys->p_face );
+     FT_Done_FreeType( p_sys->p_library );
+     free( p_sys );
+ }
+diff -r -u '--exclude=*.Plo' vlc-2.1.3-orig/modules/video_filter/blend.cpp vlc-2.1.3/modules/video_filter/blend.cpp
+--- vlc-2.1.3-orig/modules/video_filter/blend.cpp	2013-06-24 13:00:38.000000000 -0500
++++ vlc-2.1.3/modules/video_filter/blend.cpp	2014-07-12 13:48:18.322100218 -0500
+@@ -32,6 +32,7 @@
+ #include <vlc_common.h>
+ #include <vlc_plugin.h>
+ #include <vlc_filter.h>
++#include <emmintrin.h>
+ #include "filter_picture.h"
+ 
+ /*****************************************************************************
+@@ -46,6 +47,9 @@
+     set_callbacks(Open, Close)
+ vlc_module_end()
+ 
++static void BlendYUVAI420( filter_t *, picture_t *, const picture_t *,
++                           int, int, int, int, int );
++
+ static inline unsigned div255(unsigned v)
+ {
+     /* It is exact for 8 bits, and has a max error of 1 for 9 and 10 bits
+@@ -57,7 +61,12 @@
+ template <typename T>
+ void merge(T *dst, unsigned src, unsigned f)
+ {
+-    *dst = div255((255 - f) * (*dst) + src * f);
++    /* If 100% opacity, skip the alpha-blending operation and just replace 
++       the dst with src (most common case for EIA-608 SPU decoding) */
++    if (likely(f == 0xff))
++        *dst = src;
++    else
++        *dst = div255((255 - f) * (*dst) + src * f);
+ }
+ 
+ struct CPixel {
+@@ -83,6 +92,13 @@
+     {
+         return true;
+     }
++	int pixelAlphaNonzero(unsigned dx, unsigned line_remaining, unsigned width, unsigned height, unsigned char *nextalphabyte) const
++    {
++        /* Overload this function for specific pixel types to optimize
++           the process of finding non-transparent pixels (which for blending
++           stuff like SPUs is almost all of them) */
++        return 1;
++    }
+ 
+ protected:
+     template <unsigned ry>
+@@ -104,8 +120,10 @@
+         data[0] = CPicture::getLine< 1>(0);
+         data[1] = CPicture::getLine<ry>(swap_uv ? 2 : 1);
+         data[2] = CPicture::getLine<ry>(swap_uv ? 1 : 2);
+-        if (has_alpha)
++        if (has_alpha) {
+             data[3] = CPicture::getLine<1>(3);
++            curloc = &data[3][0];
++        }
+     }
+     void get(CPixel *px, unsigned dx, bool full = true) const
+     {
+@@ -117,6 +135,84 @@
+         if (has_alpha)
+             px->a = *getPointer(3, dx);
+     }
++    int pixelAlphaNonzero(unsigned dx, unsigned line_remaining, unsigned width, unsigned height,
++                          unsigned char *nextalphabyte)
++    {
++#define DJH_BLEND_SSE2 1
++#ifdef DJH_BLEND_SSE2
++        unsigned int ret = 0;
++
++        // Drop out immediately if first byte encountered is nonzero
++        if (*curloc != 0) {
++           *nextalphabyte = *curloc++;
++           return 1;
++        }
++
++        /* 16-byte align */
++        while ((((intptr_t)curloc) & (sizeof(__m128i)-1)) != 0)
++        {
++            if (*curloc++ != 0) {
++                *nextalphabyte = *curloc;
++                ret++;
++                return ret;
++            }
++            ++ ret;
++        }
++
++        __m128i xmm0 = _mm_setzero_si128();
++        __m128i xmm1;
++        int mask = 0;
++        while (ret < line_remaining)
++        {
++            xmm1 = _mm_load_si128((__m128i *)curloc);
++            xmm1 = _mm_cmpeq_epi8(xmm1, xmm0);
++            mask = _mm_movemask_epi8(xmm1);
++            if ((mask = _mm_movemask_epi8(xmm1)) == 0xffff)
++            {
++               /* All elements are 0, keep looking */
++               curloc += 16;
++               ret += 16;
++               continue;
++            }
++            break;
++        }
++
++        *nextalphabyte = *curloc++;
++        ret++;
++        return ret;
++#else
++        int ret = 1;
++
++        uint32_t *line_end = (uint32_t *) curloc + line_remaining - 4;
++        if (has_alpha) {
++               if (unlikely(line_remaining < 4)) {
++                   *nextalphabyte = *curloc;
++                    curloc++;
++                   return 1;
++               }
++
++            uint32_t *loc32 = (uint32_t *) curloc;
++            do {
++                if (unlikely(*loc32))
++                    break;
++                loc32++;
++            } while (likely(loc32 < line_end));
++
++            uint8_t *xcur = (uint8_t *) loc32;
++            ret = xcur - curloc;
++            if (loc32 > line_end)
++                ret -= 4;
++
++            /* We're always going to move forward by at least one */
++            if (ret == 0) {
++                *nextalphabyte = *curloc;
++                ret++;
++            }
++        }
++        curloc += ret;
++        return ret;
++#endif
++    }
+     void merge(unsigned dx, const CPixel &spx, unsigned a, bool full)
+     {
+         ::merge(getPointer(0, dx), spx.i, a);
+@@ -137,8 +233,10 @@
+             data[1] += picture->p[swap_uv ? 2 : 1].i_pitch;
+             data[2] += picture->p[swap_uv ? 1 : 2].i_pitch;
+         }
+-        if (has_alpha)
++        if (has_alpha) {
+             data[3] += picture->p[3].i_pitch;
++	    curloc = data[3];
++	}
+     }
+ private:
+     pixel *getPointer(unsigned plane, unsigned dx) const
+@@ -149,6 +247,7 @@
+             return (pixel*)&data[plane][(x + dx) /  1 * sizeof(pixel)];
+     }
+     uint8_t *data[4];
++    uint8_t *curloc;
+ };
+ 
+ template <bool swap_uv>
+@@ -498,18 +597,38 @@
+     TSrc src(src_data);
+     TDst dst(dst_data);
+     TConvert convert(dst_data.getFormat(), src_data.getFormat());
++    CPixel spx;
++    unsigned int a;
++    unsigned char srca = 0;
++    int nextpix;
++    int remaining;
+ 
+     for (unsigned y = 0; y < height; y++) {
+-        for (unsigned x = 0; x < width; x++) {
+-            CPixel spx;
++        remaining = width;
++        for (unsigned x = 0; remaining > 0;) {
++             nextpix = src.pixelAlphaNonzero(x, remaining, width, height, &srca);
++            if (likely(nextpix > 1)) {
++                remaining -= nextpix;
++                continue;
++            }
++            x = width - remaining;
++            remaining--;
++
++            if (srca == 0)
++                continue; 
++
++            /* A high percentage of cases have the source image as 
++               opaque, so optimize for this case */
++            if (alpha == 0xff)
++                a = srca;
++            else
++                a = div255(alpha * srca);
+ 
+-            src.get(&spx, x);
++            /* Since we know we're going to actually blend the pixels, now grab their
++               properties */
++            src.get(&spx, x, true);
+             convert(spx);
+ 
+-            unsigned a = div255(alpha * spx.a);
+-            if (a <= 0)
+-                continue;
+-
+             if (dst.isFull(x))
+                 dst.merge(x, spx, a, true);
+             else
+@@ -623,6 +742,15 @@
+     video_format_FixRgb(&filter->fmt_out.video);
+     video_format_FixRgb(&filter->fmt_in.video);
+ 
++    if (src->format.i_chroma == VLC_CODEC_YUVA && 
++        dst->format.i_chroma == VLC_CODEC_I420) {
++      /* Use an optmized blending routine instead of the generic blender */
++      BlendYUVAI420( filter, dst, src, filter->fmt_out.video.i_x_offset + x_offset,
++                     filter->fmt_out.video.i_y_offset + y_offset, 
++                     width, height, alpha);
++      return;
++    }
++
+     sys->blend(CPicture(dst, &filter->fmt_out.video,
+                         filter->fmt_out.video.i_x_offset + x_offset,
+                         filter->fmt_out.video.i_y_offset + y_offset),
+@@ -662,3 +790,266 @@
+     delete filter->p_sys;
+ }
+ 
++static uint8_t *vlc_plane_start( int *pi_pitch,
++                                 const picture_t *p_picture,
++                                 int i_plane,
++                                 int i_x_offset, int i_y_offset,
++                                 const video_format_t *p_fmt,
++                                 int r )
++{
++    const int i_pitch = p_picture->p[i_plane].i_pitch;
++    uint8_t *p_pixels = p_picture->p[i_plane].p_pixels;
++
++    const int i_dx = ( i_x_offset + p_fmt->i_x_offset ) / r;
++    const int i_dy = ( i_y_offset + p_fmt->i_y_offset ) / r;
++
++    if( pi_pitch )
++        *pi_pitch = i_pitch;
++    return &p_pixels[ i_dy * i_pitch + i_dx ];
++}
++
++/***********************************************************************
++ * Utils
++ ***********************************************************************/
++#define MAX_TRANS 255
++#define TRANS_BITS  8
++
++static inline int vlc_blend( int v1, int v2, int a )
++{
++    /* TODO bench if the tests really increase speed */
++    if( a == 0 )
++        return v2;
++    else if( a == MAX_TRANS )
++        return v1;
++    return ( v1 * a + v2 * (MAX_TRANS - a ) ) >> TRANS_BITS;
++}
++
++static inline int vlc_alpha( int t, int a )
++{
++    if( a == 255 )
++        return t;
++    return div255(t * a);
++}
++
++/***********************************************************************
++ * YUVA
++ ***********************************************************************/
++static void BlendYUVAI420( filter_t *p_filter,
++                           picture_t *p_dst, const picture_t *p_src,
++                           int i_x_offset, int i_y_offset,
++                           int i_width, int i_height, int i_alpha )
++{
++    int i_src_pitch, i_dst_pitch;
++    uint8_t *p_src_y, *p_dst_y;
++    uint8_t *p_src_u, *p_dst_u;
++    uint8_t *p_src_v, *p_dst_v;
++    uint8_t *p_trans;
++    int i_x, i_y, i_trans = 0;
++    bool b_even_scanline = i_y_offset % 2;
++    int i_even_pitch;
++
++    bool b_swap_up = vlc_fourcc_AreUVPlanesSwapped( p_filter->fmt_out.video.i_chroma,
++                                                    VLC_CODEC_I420 );
++    p_dst_y = vlc_plane_start( &i_dst_pitch, p_dst, Y_PLANE,
++                               i_x_offset, i_y_offset, &p_filter->fmt_out.video, 1 );
++    p_dst_u = vlc_plane_start( &i_even_pitch, p_dst, b_swap_up ? V_PLANE : U_PLANE,
++                               i_x_offset, i_y_offset, &p_filter->fmt_out.video, 2 );
++    p_dst_v = vlc_plane_start( NULL, p_dst, b_swap_up ? U_PLANE : V_PLANE,
++                               i_x_offset, i_y_offset, &p_filter->fmt_out.video, 2 );
++
++    p_src_y = vlc_plane_start( &i_src_pitch, p_src, Y_PLANE,
++                               0, 0, &p_filter->fmt_in.video, 1 );
++    p_src_u = vlc_plane_start( NULL, p_src, U_PLANE,
++                               0, 0, &p_filter->fmt_in.video, 2 );
++    p_src_v = vlc_plane_start( NULL, p_src, V_PLANE,
++                               0, 0, &p_filter->fmt_in.video, 2 );
++    p_trans = vlc_plane_start( NULL, p_src, A_PLANE,
++                               0, 0, &p_filter->fmt_in.video, 1 );
++
++
++#define DJH_NEWBLEND_SSE2 1
++#ifdef DJH_NEWBLEND_SSE2
++    __m128i zero = _mm_setzero_si128();            
++    __m128i xmm_255 = _mm_set1_epi16(255);
++    __m128i xmm_all1 = _mm_set1_epi16(1);
++#if 0
++    __m128i low32 = _mm_set_epi8(0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0xff,0xff,0xff);
++#endif
++    int totalwidth = i_width - (i_width % 8);
++
++    /* Draw until we reach the bottom of the subtitle */
++    for( i_y = 0; i_y < i_height; i_y++, p_trans += i_src_pitch,
++         p_dst_y += i_dst_pitch, p_src_y += i_src_pitch,
++         p_dst_u += b_even_scanline ? i_even_pitch : 0,
++         p_src_u += i_src_pitch,
++         p_dst_v += b_even_scanline ? i_even_pitch : 0,
++         p_src_v += i_src_pitch )
++    {
++        b_even_scanline = !b_even_scanline;
++        int i_chroma_x = 0;
++
++        /* Draw until we reach the end of the line */
++        for( i_x = 0; i_x < totalwidth; i_x += 8 )
++        {
++            __m128i xmm_ai, xmm_ai2;
++            __m128i xmm_a, xmm_x;
++            __m128i xmm_src_y, xmm_src_y2;
++            __m128i xmm_dst_y, xmm_dst_y2;
++            __m128i xmm_final;
++
++            xmm_ai2 = _mm_loadl_epi64((__m128i *)&p_trans[i_x]);
++            xmm_ai = _mm_unpacklo_epi8(xmm_ai2, zero);
++
++            if (i_alpha == 0xff)
++            {
++                xmm_a = xmm_ai;
++            }
++            else
++            {
++                /* ((v >> 8) + v + 1) >> 8; */
++                __m128i tmp1, tmp2, tmp3;
++                tmp1 = _mm_set1_epi16(i_alpha);
++                tmp2 = _mm_mullo_epi16(xmm_ai, tmp1);
++                tmp1 =  _mm_srli_epi16(tmp2, 8);
++                tmp3 = _mm_add_epi16(tmp1, tmp2);
++                tmp1 = _mm_add_epi16(tmp3, xmm_all1);
++                xmm_a = _mm_srli_epi16(tmp1, 8);
++            }
++
++            /* Drop out if alpha channel is zero for all eight bytes */
++            __m128i xmm1 = _mm_cmpeq_epi8(xmm_a, zero);
++            if (likely(_mm_movemask_epi8(xmm1) == 0xffff))
++            {
++                 if( b_even_scanline )
++                     i_chroma_x += 4;
++                 continue;
++            }
++
++            /* If src is completely opaque, skip the blend and just replace the bytes */
++            xmm1 = _mm_cmpeq_epi8(xmm_a, xmm_255);
++            if (likely(_mm_movemask_epi8(xmm1) == 0xffff))
++            {
++                 xmm_src_y = _mm_loadl_epi64((__m128i *) &p_src_y[i_x]);
++                 _mm_storel_epi64((__m128i *)&p_dst_y[i_x], xmm_src_y);
++                 if( b_even_scanline )
++                 {
++                     xmm_src_y2 = _mm_loadl_epi64((__m128i *) &p_src_u[i_x]);
++                     _mm_storel_epi64((__m128i *)&p_dst_u[i_chroma_x], xmm_src_y2);
++                     xmm_src_y = _mm_loadl_epi64((__m128i *) &p_src_v[i_x]);
++                     _mm_storel_epi64((__m128i *)&p_dst_v[i_chroma_x], xmm_src_y);
++                     i_chroma_x += 4;
++                 }
++                 continue;
++            }
++
++            xmm_x = _mm_sub_epi16(xmm_255, xmm_a);
++
++            xmm_dst_y = _mm_loadl_epi64((__m128i *) &p_dst_y[i_x]);
++            xmm_src_y = _mm_loadl_epi64((__m128i *) &p_src_y[i_x]);
++            xmm_dst_y2 = _mm_unpacklo_epi8(xmm_dst_y, zero);
++            xmm_src_y2 = _mm_unpacklo_epi8(xmm_src_y, zero);
++
++            xmm_src_y = _mm_mullo_epi16(xmm_src_y2, xmm_a);
++            xmm_dst_y = _mm_mullo_epi16(xmm_dst_y2, xmm_x);
++            xmm_dst_y2 = _mm_add_epi16(xmm_src_y, xmm_dst_y);
++            xmm_dst_y = _mm_srli_epi16(xmm_dst_y2, 8);
++            xmm_final = _mm_packus_epi16(xmm_dst_y, zero);
++            _mm_storel_epi64((__m128i *)&p_dst_y[i_x], xmm_final);
++
++            /* Luma done, now deal with Chroma channels */
++            if( b_even_scanline ) {
++                /* Twiddle the alpha channel so we're using every other SRC byte */
++                xmm_ai = _mm_packus_epi16(xmm_a, zero);
++                xmm_a = _mm_and_si128(xmm_ai, xmm_255);
++                xmm_x = _mm_sub_epi16(xmm_255, xmm_a);
++
++                /* U channel */
++                xmm_dst_y = _mm_loadl_epi64((__m128i *) &p_dst_u[i_chroma_x]);
++                xmm_src_y = _mm_loadl_epi64((__m128i *) &p_src_u[i_x]);
++                xmm_dst_y2 = _mm_unpacklo_epi8(xmm_dst_y, zero);
++                xmm_src_y2 = _mm_and_si128(xmm_src_y, xmm_255);
++                xmm_src_y = _mm_mullo_epi16(xmm_src_y2, xmm_a);
++                xmm_dst_y = _mm_mullo_epi16(xmm_dst_y2, xmm_x);
++                xmm_dst_y2 = _mm_add_epi16(xmm_src_y, xmm_dst_y);
++                xmm_dst_y = _mm_srli_epi16(xmm_dst_y2, 8);
++                xmm_final = _mm_packus_epi16(xmm_dst_y, zero);
++		uint32_t *dst = (uint32_t *) &p_dst_u[i_chroma_x];
++		*dst = _mm_cvtsi128_si32(xmm_final);
++#if 0
++                /* Store the resulting 4 bytes */
++                _mm_maskmoveu_si128(xmm_final, low32, (char *) &p_dst_u[i_chroma_x]);
++#else
++                 _mm_storel_epi64((__m128i *)&p_dst_u[i_chroma_x], xmm_final);
++#endif
++                /* V channel (identical process to U, but on different plane) */
++                xmm_dst_y = _mm_loadl_epi64((__m128i *) &p_dst_v[i_chroma_x]);
++                xmm_src_y = _mm_loadl_epi64((__m128i *) &p_src_v[i_x]);
++                xmm_dst_y2 = _mm_unpacklo_epi8(xmm_dst_y, zero);
++                xmm_src_y2 = _mm_and_si128(xmm_src_y, xmm_255);
++                xmm_src_y = _mm_mullo_epi16(xmm_src_y2, xmm_a);
++                xmm_dst_y = _mm_mullo_epi16(xmm_dst_y2, xmm_x);
++                xmm_dst_y2 = _mm_add_epi16(xmm_src_y, xmm_dst_y);
++                xmm_dst_y = _mm_srli_epi16(xmm_dst_y2, 8);
++                xmm_final = _mm_packus_epi16(xmm_dst_y, zero);
++#if 0
++                _mm_maskmoveu_si128(xmm_final, low32, (char *) &p_dst_v[i_chroma_x]);
++#else
++                 _mm_storel_epi64((__m128i *)&p_dst_v[i_chroma_x], xmm_final);
++#endif
++                i_chroma_x += 4;
++            }
++        }
++
++        /* Draw the remaining few bytes (since the optimized routine works in groups of 8) */
++        for (; i_x < i_width; i_x++)
++        {
++            if( p_trans )
++                i_trans = vlc_alpha( p_trans[i_x], i_alpha );
++
++            if( !i_trans )
++            {
++                if( b_even_scanline && i_x % 2 == 0 )
++                    i_chroma_x++;
++                continue;
++            }
++
++            p_dst_y[i_x] = vlc_blend( p_src_y[i_x], p_dst_y[i_x], i_trans );
++            if( b_even_scanline && i_x % 2 == 0 )
++            {
++                p_dst_u[i_chroma_x] = vlc_blend( p_src_u[i_x], p_dst_u[i_chroma_x], i_trans );
++                p_dst_v[i_chroma_x] = vlc_blend( p_src_v[i_x], p_dst_v[i_chroma_x], i_trans );
++                i_chroma_x++;                  
++            }
++        }
++    }
++#else
++    /* Draw until we reach the bottom of the subtitle */
++    for( i_y = 0; i_y < i_height; i_y++, p_trans += i_src_pitch,
++         p_dst_y += i_dst_pitch, p_src_y += i_src_pitch,
++         p_dst_u += b_even_scanline ? i_dst_pitch/2 : 0,
++         p_src_u += i_src_pitch,
++         p_dst_v += b_even_scanline ? i_dst_pitch/2 : 0,
++         p_src_v += i_src_pitch )
++    {
++        b_even_scanline = !b_even_scanline;
++
++        /* Draw until we reach the end of the line */
++        for( i_x = 0; i_x < i_width; i_x++ )
++        {
++            if( p_trans )
++                i_trans = vlc_alpha( p_trans[i_x], i_alpha );
++
++            if( !i_trans )
++                continue;
++
++            /* Blending */
++            p_dst_y[i_x] = vlc_blend( p_src_y[i_x], p_dst_y[i_x], i_trans );
++            if( b_even_scanline && i_x % 2 == 0 )
++            {
++                p_dst_u[i_x/2] = vlc_blend( p_src_u[i_x], p_dst_u[i_x/2], i_trans );
++                p_dst_v[i_x/2] = vlc_blend( p_src_v[i_x], p_dst_v[i_x/2], i_trans );
++            }
++        }
++    }
++#endif
++}
+diff -r -u '--exclude=*.Plo' vlc-2.1.3-orig/modules/video_filter/Makefile vlc-2.1.3/modules/video_filter/Makefile
+--- vlc-2.1.3-orig/modules/video_filter/Makefile	2014-06-20 08:14:52.326073214 -0500
++++ vlc-2.1.3/modules/video_filter/Makefile	2014-07-12 13:45:54.858092167 -0500
+@@ -2049,7 +2049,7 @@
+ # Force per-target objects:
+ libblend_plugin_la_CPPFLAGS = $(AM_CPPFLAGS) $(CPPFLAGS_blend)
+ libblend_plugin_la_CFLAGS = $(AM_CFLAGS) $(CFLAGS_blend)
+-libblend_plugin_la_CXXFLAGS = $(AM_CXXFLAGS) $(CXXFLAGS_blend)
++libblend_plugin_la_CXXFLAGS = $(AM_CXXFLAGS) $(CXXFLAGS_blend) -msse2
+ libblend_plugin_la_OBJCFLAGS = $(AM_OBJCFLAGS) $(OBJCFLAGS_blend)
+ # Set LIBADD manually:
+ libblend_plugin_la_LIBADD = $(AM_LIBADD) $(LIBS_blend)
+diff -r -u '--exclude=*.Plo' vlc-2.1.3-orig/src/input/stream.c vlc-2.1.3/src/input/stream.c
+--- vlc-2.1.3-orig/src/input/stream.c	2013-09-12 10:18:34.000000000 -0500
++++ vlc-2.1.3/src/input/stream.c	2014-07-08 14:01:44.564496703 -0500
+@@ -92,7 +92,7 @@
+  *        - compute a good value for i_read_size
+  *        - ?
+  */
+-#define STREAM_READ_ATONCE 1024
++#define STREAM_READ_ATONCE 8192
+ #define STREAM_CACHE_TRACK_SIZE (STREAM_CACHE_SIZE/STREAM_CACHE_TRACK)
+ 
+ typedef struct
