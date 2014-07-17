@@ -1,0 +1,19 @@
+--- src/video_output/video_output.c.orig	2014-07-17 10:24:24.121568931 -0500
++++ src/video_output/video_output.c	2014-07-17 10:26:10.057570702 -0500
+@@ -288,7 +288,16 @@
+ 
+ void vout_GetResetStatistic(vout_thread_t *vout, int *displayed, int *lost)
+ {
++    float ratio;
++    static int disp=0;
++    static int lt=0;
++
+     vout_statistic_GetReset( &vout->p->statistic, displayed, lost );
++    disp += *displayed;
++    lt += *lost;
++    ratio = (float) lt / (float)(disp + lt);
++    msg_Warn(vout, "DJH2 displayed=%d lost=%d ratio=%f", disp, lt, 
++        ratio);
+ }
+ 
+ void vout_Flush(vout_thread_t *vout, mtime_t date)
