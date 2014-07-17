@@ -24,35 +24,35 @@ Changes:
  .
    * Adding patch from Kernel Labs to improve performance of digital closed captioning streams.
 Checksums-Sha1: 
- 9cf3e576b3a65406034343d87b0cc03c51da4f29 25424 libvlc-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 80198dcd42a3db0ba405bf455669ee248830653b 42208 libvlc5_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- c8227821099abf68a272fb2cba4e73ad267ff23b 113772 libvlccore-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 2bea7b02f192bc9e8beab1643c76964dc71061c5 351852 libvlccore7_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- f87c9b82a1cc22e43855881dfb7b274fbb037105 1204080 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- aa926c8207a9fb4f5ca6af5d90a887259af4d49a 4931122 vlc-data_2.1.3-1~ubuntu12.04.2~ppa1+true6_all.deb
- ed6d71fae3974383eb26252adb12f8847ce45eb1 19431996 vlc-dbg_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- f52135e7bd45d7c2f1de40845bec3b8f133718f8 1931936 vlc-nox_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- e1f90c99d872b927096f5a9c6a0c6e4c49afb7e8 17498 vlc-plugin-pulse_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- f301143e3d70dde737a005303a55c613f21ae442 8382 vlc-plugin-zvbi_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ c213d6de294c06580fc6beaede07e813360307d4 25400 libvlc-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ f48417c1a06b7ec61fb962a3b79c4683ec59ae95 42176 libvlc5_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ b7227493ada7fd06ae2be90841e0f50ece845bca 113716 libvlccore-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ a50d68414395db49396a8b4057274d374828779b 351816 libvlccore7_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ f87e1ed504582f1f66840c600f14cce44ff3c12d 1204210 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 9c6e3e5a458d77718ff97c71eaf3faadfa0e70e9 4931230 vlc-data_2.1.3-1~ubuntu12.04.2~ppa1+true6_all.deb
+ 4a3c23169903582d7bbfa75cc0e7d3ac7b2a7f5e 19430340 vlc-dbg_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 28d688509a4a536e25f39f1d1bf48ff0bc2f9ac3 1931950 vlc-nox_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 271c798d57fa48eb553870b88600ea0702ca704a 17492 vlc-plugin-pulse_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ b1d8936adc4221d2ec00aed3e4e1a7fc238257a0 8382 vlc-plugin-zvbi_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
 Checksums-Sha256: 
- 46dcf0bfb60e841c7cd69aa5ddafc4705e91fa95527d07c296f05964d50f5361 25424 libvlc-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 29a6b0587b64af736bf6523c070be99bbd8e9334e0bbe60c66440c0325531bd0 42208 libvlc5_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 5d5cd2b883f30ee8437b89d4a856ce83bfe67157441c1c966292413eee48ace6 113772 libvlccore-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- a07a99fc6c8e6302f1cd5d00a8ee5b366aacc04e1a1093ee7544d456f2526958 351852 libvlccore7_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- f60e7a871c2d08724bdcde0b79276d8fcc7c39944c9cb5c7c700b342cc7774a7 1204080 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- ee7bd3b5b6ea3f728b0c9d4cc3d3882ccabf8aedb0ff71d000eddcf91c7c870b 4931122 vlc-data_2.1.3-1~ubuntu12.04.2~ppa1+true6_all.deb
- c2613aef232e08e9d567a71da4d10f6bfa3ac498df76a26c9098d2ae1f0669d7 19431996 vlc-dbg_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 1e32abf01e8ba6845b97763849854515f7158c67753553e0a57ec292146b17fd 1931936 vlc-nox_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- b6bbeaae941c3cd7b1d67236f3f692b048fbb03426a132a65fd184da4215d426 17498 vlc-plugin-pulse_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 26d9dac5462db38503a7d38069c7473a3edaa8088a63ce82944513280bfd3a43 8382 vlc-plugin-zvbi_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 6e4197b14d3a646d2ecb4e280055b898ca17edd47eacb34731b070ef69ff803e 25400 libvlc-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ d4bd1e3dc9ee07def4d85f14ddb491cdf2db518eb06603c5472d3d4e5e94f407 42176 libvlc5_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ e866b892cd9641a01d18cbefe0803ed2b849aaa9a4249dce4965fc8a8cfc01f8 113716 libvlccore-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 2cde09f7ee4036667d79663b8c9451fea972e836ca4c9f4936503abb8ef61384 351816 libvlccore7_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ e51fbf996c7eadbf2bed109abf68a45a94058e0b317b3a199bae6b2daff91ab8 1204210 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ bca8df140cc8ba888840c6974da5e71af8908247f03b5c52cf9c25269d7b2a29 4931230 vlc-data_2.1.3-1~ubuntu12.04.2~ppa1+true6_all.deb
+ 71df68a43b8a945d125489c067b48d6972caa2b8063eccb57da2306d76f44823 19430340 vlc-dbg_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ d4ac6172f7121ad27ed18cb031c8c5d24026fdc5c39a6115b1cc0f5da8af4dd4 1931950 vlc-nox_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ ddea65583d83d26720a7907e1d335535e7bd9a8017bbf46474638279ee6dc014 17492 vlc-plugin-pulse_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 6fbf1a3287685f44ab25c0a3388f5d12b70e5ba767ab9c9b2ef4b6044ca2188a 8382 vlc-plugin-zvbi_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
 Files: 
- 51e693f808ad1d2e6cba26c1ad845634 25424 libdevel optional libvlc-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 698fc8e2ba1832be9485f5ae915a5651 42208 libs optional libvlc5_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 8b5156992fe9baaeea58ae89aae0c791 113772 libdevel optional libvlccore-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- c1230e163cf281e5fbdc034a0b696067 351852 libs optional libvlccore7_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 88367173c89ed2aa587736320d67368c 1204080 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- c83f208577ca54cd3744bdff69290303 4931122 video optional vlc-data_2.1.3-1~ubuntu12.04.2~ppa1+true6_all.deb
- 05743c43a0cedc8292c76a403f45e994 19431996 debug extra vlc-dbg_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 45fecdc7fd712a0037cb317c6bef8d54 1931936 video optional vlc-nox_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- f3c01073afe19a4c82288556398e2aa1 17498 video optional vlc-plugin-pulse_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
- 988a2b865695e91de2fb24d1b61ee1db 8382 video optional vlc-plugin-zvbi_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 3bc036c495dddf627eae8a5c4eb442e0 25400 libdevel optional libvlc-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ a7fb2a58c65428290c6c4651921e3107 42176 libs optional libvlc5_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 62a4c6fda052a8a4ce50e184d9c9ccf9 113716 libdevel optional libvlccore-dev_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 79c19ef4785b3748e54d3496d25c741b 351816 libs optional libvlccore7_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 94944339751799969604cb8e6aeb44b8 1204210 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 3ddee13c746da3de578ec47ede452c7e 4931230 video optional vlc-data_2.1.3-1~ubuntu12.04.2~ppa1+true6_all.deb
+ c4edf5f6fc239df8ef919d7a2c325c4b 19430340 debug extra vlc-dbg_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ ed127fc2906612c0d122f03ca69d7cb6 1931950 video optional vlc-nox_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ 14e553130638be771023ff0f6a194f99 17492 video optional vlc-plugin-pulse_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
+ a9396226a256972c51a8fcac6f532224 8382 video optional vlc-plugin-zvbi_2.1.3-1~ubuntu12.04.2~ppa1+true6_i386.deb
