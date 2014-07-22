@@ -1,0 +1,34 @@
+Format: 1.8
+Date: Tue, 22 Jul 2014 10:43:13 -0500
+Source: vlc
+Binary: libvlc-dev libvlc5 libvlccore-dev libvlccore7 vlc vlc-data vlc-dbg vlc-nox vlc-plugin-pulse vlc-plugin-zvbi
+Architecture: source
+Version: 2.1.3-1~ubuntu12.04.2~ppa1+true7
+Distribution: precise
+Urgency: low
+Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
+Changed-By: Michael Nolan <mpnolan@truefitness.com>
+Description: 
+ libvlc-dev - development files for libvlc
+ libvlc5    - multimedia player and streamer library
+ libvlccore-dev - development files for libvlccore
+ libvlccore7 - base library for VLC and its modules
+ vlc        - multimedia player and streamer
+ vlc-data   - Common data for VLC
+ vlc-dbg    - debugging symbols for vlc
+ vlc-nox    - multimedia player and streamer (without X support)
+ vlc-plugin-pulse - PulseAudio plugin for VLC
+ vlc-plugin-zvbi - VBI teletext plugin for VLC
+Changes: 
+ vlc (2.1.3-1~ubuntu12.04.2~ppa1+true7) precise; urgency=low
+ .
+   * Add patch to allow playing programs that share a video PID
+Checksums-Sha1: 
+ 76caa333e04543ec63389dcea67bfb3b2db0c53a 3172 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true7.dsc
+ 5a6cfe14c8140123d613cd4acc77163f802e83c2 80464 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true7.debian.tar.gz
+Checksums-Sha256: 
+ cddb3948b2a2cc876cf6946646701ac457a016bdfe2073f5efd2749702256756 3172 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true7.dsc
+ 1f973ff72c23e614d1b34661fed90e79ffe272d5bd315ac40311e1e38b791b9b 80464 vlc_2.1.3-1~ubuntu12.04.2~ppa1+true7.debian.tar.gz
+Files: 
+ cb25bca9a3e4cfa7a0e5a19aa7c13421 3172 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true7.dsc
+ 0d210da1ad00867f0d7ba746980904d1 80464 video optional vlc_2.1.3-1~ubuntu12.04.2~ppa1+true7.debian.tar.gz
