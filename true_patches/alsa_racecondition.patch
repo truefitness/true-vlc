@@ -1,0 +1,22 @@
+X-Git-Url: http://git.videolan.org/gitweb.cgi/vlc.git/?p=vlc.git;p=vlc.git;a=blobdiff_plain;f=modules%2Faccess%2Falsa.c;h=1125545bb06d690498cb2b9c75e0ce5e7a08b710;hp=d82ae18780e2201c280d14aa78a19ede97f5ccfd;hb=4a1493db19bb1db6a57b49bed385764a7d41793e;hpb=df8f47f62c90526ec61d8c31cf9d574affbfdd27
+
+diff --git a/modules/access/alsa.c b/modules/access/alsa.c
+index d82ae18..1125545 100644
+--- a/modules/access/alsa.c
++++ b/modules/access/alsa.c
+@@ -480,6 +480,7 @@ static int Open (vlc_object_t *obj)
+     /* Kick recording */
+     aout_FormatPrepare (&fmt.audio);
+     sys->es = es_out_Add (demux->out, &fmt);
++    demux->p_sys = sys;
+ 
+     if (vlc_clone (&sys->thread, Thread, demux, VLC_THREAD_PRIORITY_INPUT))
+     {
+@@ -487,7 +488,6 @@ static int Open (vlc_object_t *obj)
+         goto error;
+     }
+ 
+-    demux->p_sys = sys;
+     demux->pf_demux = NULL;
+     demux->pf_control = Control;
+     return VLC_SUCCESS;
