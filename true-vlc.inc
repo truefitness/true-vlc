@@ -14,9 +14,10 @@ MAINTAINER=mpnolan@truefitness.com
 BUILDDIR=${SRCDIR}/${APPNAME}-${DEBVERSION}
 #DEBDIR := ${APPDIR}/debian
 DEBIAN_TGZ := http://software.truefitness.com/true-vlc/vlc_2.1.3-1~ubuntu12.04.2~ppa1${TRVERSION}.debian.tar.gz
+DSC_FILE="${APPNAME}_${VERSION}.dsc"
 
 
-all: shownames getsources unpack build repo
+all: shownames getsources unpack build build_deps repo
 getsources: get_debian_tgz get_source_package
 
 shownames:
@@ -49,6 +50,9 @@ source:
 build:
 	@echo building...
 	( cd ${BUILDDIR}; dpkg-buildpackage -rfakeroot -b -us -uc -j4)
+build_deps:
+	@echo creating build deps package
+	( cd ${SRCDIR}; mk-build-deps ${DSC_FILE})
 
 repo:
 	@ echo building repository
